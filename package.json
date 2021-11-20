@@ -1,0 +1,31 @@
+{
+  "name": "ucon",
+  "version": "1.0.0",
+  "description": "A super framework for nodejs console.",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KermanX/ucon.git"
+  },
+  "keywords": [
+    "console",
+    "cli"
+  ],
+  "author": "_Kerman@UniCoder",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KermanX/ucon/issues"
+  },
+  "homepage": "https://github.com/KermanX/ucon#readme",
+  "devDependencies": {
+    "@types/node": "^16.11.9",
+    "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "ts-node": "^10.4.0"
+  }
+}
