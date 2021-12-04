@@ -22,7 +22,7 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    - name: Mirror the Github organization repos to Gitee.
+    - name: Update UCON to Gitee.
       uses: Yikun/hub-mirror-action@master
       with:
         src: github/UniCoderGroup
