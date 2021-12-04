@@ -1,5 +1,7 @@
 # UCON framework
 
+![[GitHub Workflow Status](https://https://gitee.com/UniCoderGroup/ucon/)](https://img.shields.io/github/workflow/status/unicodergroup/ucon/Update%20to%20Gitee?label=Update%20to%20Gitee)
+
 ## 简介
 
 _UCON_ 是一个[Node.js](https://nodejs.org/)平台下**功能强大的终端 I/O 框架**。

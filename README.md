@@ -1,5 +1,7 @@
 # UCON framework
 
+![[GitHub Workflow Status](https://https://gitee.com/UniCoderGroup/ucon/)](https://img.shields.io/github/workflow/status/unicodergroup/ucon/Update%20to%20Gitee?label=Update%20to%20Gitee)
+
 ## Overview
 
 _UCON_ is a [Node.js](https://nodejs.org/) super framework for **I/O in terminals**.
