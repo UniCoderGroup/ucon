@@ -29,7 +29,7 @@ export class UCon {
    * Main log function.
    */
   log(...objs: InlineComponent<unknown>[] | string[]): Line {
-    const currentLine = new Line(this.y, combiner(objs));
+    const currentLine = new Line(this.y, combiner(...objs));
     for (const compo of this.stack) {
       currentLine.midwares.push(
         compo.newLine({
@@ -42,6 +42,16 @@ export class UCon {
 
     this.output(currentLine.render());
     return currentLine;
+  }
+
+  /**
+   * In a terminal, some characters (such as Chinese characters) have 2 width,
+   * while some may not display.
+   * This function aimed to resolve the str to get the display width.
+   * @returns The display length of str.
+   */
+  getStrDisplayWidth(str: string): number {
+    return str.length;
   }
 
   /**
@@ -173,7 +183,8 @@ export class Line {
      * @returns `next` in the context of `n`th midware
      */
     const createNext = (n: number) => {
-      if (n === this.midwares.length - 1) { // Last midware
+      if (n === this.midwares.length - 1) {
+        // Last midware
         const first = this.first;
         return () => {
           return first.render();
@@ -211,12 +222,11 @@ export abstract class Component<P> {
 }
 
 /**
- * Block Component: 
+ * Block Component:
  * Component that print several lines in the screen.
  * @example Such as `ProgressBar`
  */
 export abstract class BlockComponent<P> extends Component<P> {
-
   /**
    * Lines of the output.
    */
@@ -238,9 +248,7 @@ export abstract class BlockComponent<P> extends Component<P> {
    * @param offsetLine which line to redraw.
    */
   redraw(offsetLine = 0): void {
-    this.lines[offsetLine].first = combiner([
-      this.render()[offsetLine],
-    ]);
+    this.lines[offsetLine].first = combiner(this.render()[offsetLine]);
     //If no proxy
     this.con.redraw(this.lines[offsetLine]);
   }
@@ -253,7 +261,7 @@ export abstract class BlockComponent<P> extends Component<P> {
 }
 
 /**
- * Container Component: 
+ * Container Component:
  * Component that can process the log text.
  * @example Such as `GroupBox`
  */
@@ -263,13 +271,13 @@ export abstract class ContainerComponent<P> extends Component<P> {
    */
   register(): void {
     this.con.stack.push(this);
-  }  
-  
+  }
+
   /**
-  * Register itself
-  */
+   * Register itself
+   */
   unregister(): void {
-    if(this.con.stack.pop()!==this){
+    if (this.con.stack.pop() !== this) {
       // This happends when some ContainerComponent
       //   registered/unregistered incorrectly.
       throw new Error("Stack is not right!");
@@ -290,7 +298,7 @@ export abstract class ContainerComponent<P> extends Component<P> {
    * Always calls `this.register`
    */
   abstract begin(): void;
-  
+
   /**
    * Called when end this Container.
    * Always calls `this.unregister`
@@ -304,7 +312,7 @@ export abstract class ContainerComponent<P> extends Component<P> {
 }
 
 /**
- * Inline Component: 
+ * Inline Component:
  * Component that decorates one line
  * @example Such as 'Combiner`,`Italitic`
  */
@@ -317,26 +325,32 @@ export abstract class InlineComponent<P> extends Component<P> {
 }
 
 /**
- * The creator of a InlineComponent.
- * It works like a grammar sugar.
+ * This type receive InlineComponents or strings as contents of an InlineComponent.
  */
-export type InlineComponentCreator<P> = (props: P) => InlineComponent<P>;
-
-
-
-
-
+export type ContentsArgs = InlineComponent<unknown>[] | string[];
 
 /**
- * Combiner: A standard InlineComponent.
- * It combines several text/InlineComponents to one.
+ * This interface will be extended by an InlineComponent which receives contents.
  */
+export interface ContentsProps {
+  contents: ContentsArgs;
+}
 
-export type CombinerProps = InlineComponent<unknown>[] | string[];
+// [[Deprecated]]
+// /**
+//  * The creator of a InlineComponent.
+//  * It works like a grammar sugar.
+//  */
+// export type InlineComponentCreator = (args: any) => InlineComponent<unknown>;
+
+// Standard Components Region Begins.
+
+///// Combiner /////////////////////////////////////////////
+export interface CombinerProps extends ContentsProps {}
 export class Combiner extends InlineComponent<CombinerProps> {
   render() {
     let result = "";
-    for (const o of this.props) {
+    for (const o of this.props.contents) {
       if (typeof o === "string") {
         result += o;
       } else {
@@ -346,21 +360,163 @@ export class Combiner extends InlineComponent<CombinerProps> {
     return result;
   }
 }
-export const combiner: InlineComponentCreator<CombinerProps> = (props) => {
-  return new Combiner(props);
-};
-
-
-
 /**
- * Combiner: A standard BlockComponent.
- * Shows a progress in the screen
+ * Combiner: A standard InlineComponent.
+ * It combines several text/InlineComponents to one.
  */
+export function combiner(...contents: ContentsArgs): Combiner {
+  return new Combiner({ contents });
+}
+////////////////////////////////////////////////////////////
 
+///// LeftAlign ///////////////////////////////////////////
+export class LeftAlign extends InlineComponent<AlignProps> {
+  render() {
+    let str = combiner(...this.props.contents).render();
+    let strWidth = this.con.getStrDisplayWidth(str);
+    let leftMargin = this.props.width - strWidth;
+    return str + " ".repeat(leftMargin);
+  }
+}
+/**
+ * LeftAlign: A standard InlineComponent
+ * It align a text to left.
+ */
+export function leftAlign(width: number, ...contents: ContentsArgs): LeftAlign {
+  return new LeftAlign({ width, contents });
+}
+////////////////////////////////////////////////////////////
+
+///// MiddleAlign //////////////////////////////////////////
+export class MiddleAlign extends InlineComponent<AlignProps> {
+  render() {
+    let str = combiner(...this.props.contents).render();
+    let strWidth = this.con.getStrDisplayWidth(str);
+    let leftMargin = (this.props.width - strWidth) / 2;
+    let rightMargin = this.props.width - leftMargin;
+    return " ".repeat(leftMargin) + str + " ".repeat(rightMargin);
+  }
+}
+/**
+ * MiddleAlign: A standard InlineComponent
+ * It align a text to middle.
+ */
+export function middleAlign(
+  width: number,
+  ...contents: ContentsArgs
+): MiddleAlign {
+  return new MiddleAlign({ width, contents });
+}
+////////////////////////////////////////////////////////////
+
+///// RightAlign ///////////////////////////////////////////
+export class RightAlign extends InlineComponent<AlignProps> {
+  render() {
+    let str = combiner(...this.props.contents).render();
+    let strWidth = this.con.getStrDisplayWidth(str);
+    let rightMargin = this.props.width - strWidth;
+    return " ".repeat(rightMargin) + str;
+  }
+}
+/**
+ * RightAlign: A standard InlineComponent
+ * It align a text to right.
+ */
+export function rightAlign(
+  width: number,
+  ...contents: ContentsArgs
+): RightAlign {
+  return new RightAlign({ width, contents });
+}
+////////////////////////////////////////////////////////////
+
+///// Align ////////////////////////////////////////////////
+export type AlignDirection = "left" | "middle" | "right";
+export interface AlignProps extends ContentsProps {
+  width: number;
+}
+/**
+ * Align: A standard InlineComponent
+ * It align a text to specific direction.
+ */
+export function align(
+  direction: AlignDirection,
+  width: number,
+  ...contents: ContentsArgs
+): MiddleAlign {
+  const aligner = new Map<
+    AlignDirection,
+    (width: number, ...contents: ContentsArgs) => InlineComponent<AlignProps>
+  >([
+    ["left", leftAlign],
+    ["middle", middleAlign],
+    ["right", rightAlign],
+  ]).get(direction);
+  if (aligner === undefined) {
+    throw new Error("Unknown align direction!");
+  }
+  return aligner(width, ...contents);
+}
+////////////////////////////////////////////////////////////
+
+///// ChalkJs //////////////////////////////////////////////
+export interface ChalkjsProps extends ContentsProps {
+  chalk: chalk.Chalk;
+}
+export class Chalkjs extends InlineComponent<ChalkjsProps> {
+  render() {
+    return this.props.chalk(combiner(...this.props.contents).render());
+  }
+}
+/**
+ * Chalkjs: A standard InlineComponent
+ * It calls chalk.js.
+ */
+export function chalkjs(
+  chalk: chalk.Chalk,
+  ...contents: ContentsArgs
+): Chalkjs {
+  return new Chalkjs({ chalk, contents });
+}
+////////////////////////////////////////////////////////////
+
+///// Color ////////////////////////////////////////////////
+export interface ColorProps extends ContentsProps {
+  r: number;
+  g: number;
+  b: number;
+}
+export class Color extends InlineComponent<ColorProps> {
+  render() {
+    return chalkjs(
+      chalk.rgb(this.props.r, this.props.g, this.props.b),
+      ...this.props.contents
+    ).render();
+  }
+}
+/**
+ * Color: A standard InlineComponent
+ * It uses chalk.js to add color to the content.
+ */
+export function color(
+  r: number,
+  g: number,
+  b: number,
+  ...contents: ContentsArgs
+): Color {
+  return new Color({ r, g, b, contents });
+}
+////////////////////////////////////////////////////////////
+
+///// ProgressBar //////////////////////////////////////////
 export interface ProgressBarProps {
   width: number;
   name: string;
 }
+/**
+ * ProgressBar: A standard BlockComponent.
+ * Shows a progress in the screen
+ */
 export class ProgressBar extends BlockComponent<ProgressBarProps> {
   current = 0;
   render() {
@@ -368,10 +524,13 @@ export class ProgressBar extends BlockComponent<ProgressBarProps> {
     return [
       this.props.name +
         ": [" +
-        chalk.bgWhite(" ".repeat(nOKed)) +
+        chalkjs(chalk.bgWhite, " ".repeat(nOKed)).render() +
         " ".repeat(this.props.width - nOKed) +
         "]" +
-        chalk.yellow((this.current * 100).toFixed(1)) +
+        chalkjs(
+          chalk.yellow,
+          rightAlign(5, (this.current * 100).toFixed(1))
+        ).render() +
         "%",
     ];
   }
@@ -385,3 +544,4 @@ export class ProgressBar extends BlockComponent<ProgressBarProps> {
     return this.current;
   }
 }
+////////////////////////////////////////////////////////////
