@@ -1,6 +1,6 @@
 # UCON framework
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/unicodergroup/ucon/Update%20to%20Gitee?label=Update%20to%20Gitee)](https://https://gitee.com/UniCoderGroup/ucon/)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/unicodergroup/ucon/Update%20to%20Gitee?label=Update%20to%20Gitee)](https://gitee.com/UniCoderGroup/ucon/) ![GitHub last commit](https://img.shields.io/github/last-commit/unicodergroup/ucon) ![GitHub](https://img.shields.io/github/license/unicodergroup/ucon) [![Translated](https://img.shields.io/badge/Translated%20to-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-brightgreen)](README_zh.md)
 
 ## Overview
 
@@ -24,7 +24,7 @@ Each output can be composed of components.
 
 This borrows from the designs of front-end frameworks.
 
-[<button>An introduction to components</button>](#Components)
+[<div style="border:1px black solid">An introduction to components</div>](#Components)
 
 #### Standardize
 
@@ -34,7 +34,7 @@ Components let you split the UI into independent, reusable pieces, and think abo
 
 ### Component categories
 
-In*UCON*, components are divided into three categories: [BlockComponent](#BlockComponent), [InlineComponent](#InlineComponent) and [ContainerComponent](#ContainerComponent)
+In _UCON_, components are divided into three categories: [BlockComponent](#BlockComponent), [InlineComponent](#InlineComponent) and [ContainerComponent](#ContainerComponent)
 
 #### BlockComponent
 

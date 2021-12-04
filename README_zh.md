@@ -1,6 +1,6 @@
 # UCON framework
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/unicodergroup/ucon/Update%20to%20Gitee?label=Update%20to%20Gitee)](https://https://gitee.com/UniCoderGroup/ucon/)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/unicodergroup/ucon/Update%20to%20Gitee?label=Update%20to%20Gitee)](https://gitee.com/UniCoderGroup/ucon/) ![GitHub last commit](https://img.shields.io/github/last-commit/unicodergroup/ucon) ![GitHub](https://img.shields.io/github/license/unicodergroup/ucon) [![Translated](https://img.shields.io/badge/Translated%20to-English-brightgreen)](README.md)
 
 ## 简介
 
@@ -24,7 +24,7 @@ _UCON_ 的设计目标是使得终端 I/O [可视化](#可视化)、[组件化](
 
 这一点借鉴了前端框架的设计思想。
 
-[<button>关于组件的介绍</button>](#组件)
+[<div style="border:1px black solid">关于组件的介绍</div>](#组件)
 
 #### 规范化
 
