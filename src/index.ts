@@ -1,5 +1,7 @@
 import chalk from "chalk";
 import { stdout } from "process";
+import _ from "lodash";
+import assert from "node:assert";
 
 /**
  * Main.
@@ -201,14 +203,22 @@ export class Line {
   }
 }
 
+type DefaultProps<OP> = {[K keyof OP]:K keyof Required<OP>?}
+
 /**
  * The base class of all the components
  */
 export abstract class Component<P> {
-  constructor(props: P, con: UCon = ucon) {
-    this.props = props;
+  constructor(props: Partial<P>, con: UCon = ucon) {
+    assert(this.defaultProps !== undefined, "Undefined default properties!");
+    this.props = _.defaults(props, this.defaultProps);
     this.con = con;
   }
+
+  /**
+   * Defalt Properties.
+   */
+  defaultProps: P | undefined = undefined;
 
   /**
    * Properties.
@@ -314,7 +324,7 @@ export abstract class ContainerComponent<P> extends Component<P> {
 /**
  * Inline Component:
  * Component that decorates one line
- * @example Such as 'Combiner`,`Italitic`
+ * @example Such as `Combiner`,`Italitic`
  */
 export abstract class InlineComponent<P> extends Component<P> {
   /**
@@ -336,6 +346,13 @@ export interface ContentsProps {
   contents: ContentsArgs;
 }
 
+/**
+ * This is the Blank value of ContentsProps.
+ */
+export const BlankContents: ContentsProps = {
+  contents: [],
+};
+
 // [[Deprecated]]
 // /**
 //  * The creator of a InlineComponent.
@@ -351,10 +368,10 @@ export class Combiner extends InlineComponent<CombinerProps> {
   render() {
     let result = "";
     for (const o of this.props.contents) {
-      if (typeof o === "string") {
-        result += o;
-      } else {
+      if (o instanceof InlineComponent) {
         result += o.render();
+      } else {
+        result += o as string;
       }
     }
     return result;
@@ -369,8 +386,44 @@ export function combiner(...contents: ContentsArgs): Combiner {
 }
 ////////////////////////////////////////////////////////////
 
+///// Align ////////////////////////////////////////////////
+export type AlignDirection = "left" | "middle" | "right";
+export interface AlignProps extends ContentsProps {
+  width: number;
+}
+export abstract class Align extends InlineComponent<AlignProps> {
+  defaultProps = {
+    width: 10,
+    ...BlankContents,
+  };
+}
+/**
+ * Align: A standard InlineComponent
+ * It align a text to specific direction.
+ */
+export function align(
+  direction: AlignDirection,
+  width: number,
+  ...contents: ContentsArgs
+): Align {
+  type Aligner<T extends Align> = (width: number, ...contents: ContentsArgs) => T ;
+  const aligner = new Map<
+    AlignDirection,
+    Aligner<LeftAlign|MiddleAlign|RightAlign> 
+  >([
+    ["left", leftAlign],
+    ["middle", middleAlign],
+    ["right", rightAlign],
+  ]).get(direction);
+  if (aligner === undefined) {
+    throw new Error("Unknown align direction!");
+  }
+  return aligner(width, ...contents);
+}
+////////////////////////////////////////////////////////////
+
 ///// LeftAlign ///////////////////////////////////////////
-export class LeftAlign extends InlineComponent<AlignProps> {
+export class LeftAlign extends Align {
   render() {
     let str = combiner(...this.props.contents).render();
     let strWidth = this.con.getStrDisplayWidth(str);
@@ -388,7 +441,7 @@ export function leftAlign(width: number, ...contents: ContentsArgs): LeftAlign {
 ////////////////////////////////////////////////////////////
 
 ///// MiddleAlign //////////////////////////////////////////
-export class MiddleAlign extends InlineComponent<AlignProps> {
+export class MiddleAlign extends Align {
   render() {
     let str = combiner(...this.props.contents).render();
     let strWidth = this.con.getStrDisplayWidth(str);
@@ -410,7 +463,7 @@ export function middleAlign(
 ////////////////////////////////////////////////////////////
 
 ///// RightAlign ///////////////////////////////////////////
-export class RightAlign extends InlineComponent<AlignProps> {
+export class RightAlign extends Align {
   render() {
     let str = combiner(...this.props.contents).render();
     let strWidth = this.con.getStrDisplayWidth(str);
@@ -430,40 +483,15 @@ export function rightAlign(
 }
 ////////////////////////////////////////////////////////////
 
-///// Align ////////////////////////////////////////////////
-export type AlignDirection = "left" | "middle" | "right";
-export interface AlignProps extends ContentsProps {
-  width: number;
-}
-/**
- * Align: A standard InlineComponent
- * It align a text to specific direction.
- */
-export function align(
-  direction: AlignDirection,
-  width: number,
-  ...contents: ContentsArgs
-): MiddleAlign {
-  const aligner = new Map<
-    AlignDirection,
-    (width: number, ...contents: ContentsArgs) => InlineComponent<AlignProps>
-  >([
-    ["left", leftAlign],
-    ["middle", middleAlign],
-    ["right", rightAlign],
-  ]).get(direction);
-  if (aligner === undefined) {
-    throw new Error("Unknown align direction!");
-  }
-  return aligner(width, ...contents);
-}
-////////////////////////////////////////////////////////////
-
 ///// ChalkJs //////////////////////////////////////////////
 export interface ChalkjsProps extends ContentsProps {
   chalk: chalk.Chalk;
 }
 export class Chalkjs extends InlineComponent<ChalkjsProps> {
+  defaultProps = {
+    chalk,
+    ...BlankContents,
+  };
   render() {
     return this.props.chalk(combiner(...this.props.contents).render());
   }
@@ -487,6 +515,12 @@ export interface ColorProps extends ContentsProps {
   b: number;
 }
 export class Color extends InlineComponent<ColorProps> {
+  defaultProps = {
+    r: 0,
+    g: 0,
+    b: 0,
+    ...BlankContents,
+  };
   render() {
     return chalkjs(
       chalk.rgb(this.props.r, this.props.g, this.props.b),
@@ -512,12 +546,18 @@ export function color(
 export interface ProgressBarProps {
   width: number;
   name: string;
+  fractionDigits: number;
 }
 /**
  * ProgressBar: A standard BlockComponent.
  * Shows a progress in the screen
  */
 export class ProgressBar extends BlockComponent<ProgressBarProps> {
+  defaultProps = {
+    width: 30,
+    name: "Progress",
+    fractionDigits: 1,
+  };
   current = 0;
   render() {
     const nOKed = Math.round(this.current * this.props.width);
@@ -529,7 +569,7 @@ export class ProgressBar extends BlockComponent<ProgressBarProps> {
         "]" +
         chalkjs(
           chalk.yellow,
-          rightAlign(5, (this.current * 100).toFixed(1))
+          rightAlign(5, (this.current * 100).toFixed(this.props.fractionDigits))
         ).render() +
         "%",
     ];
@@ -545,3 +585,61 @@ export class ProgressBar extends BlockComponent<ProgressBarProps> {
   }
 }
 ////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////
+export interface TableProps {
+  separator: boolean;
+  title: string;
+  cols: {
+    title: string;
+    width: number;
+    align: AlignDirection;
+    key:string;
+  }[];
+}
+/**
+ * Table: A standard BlockComponent.
+ * Shows a table in the screen
+ */
+export class Table<T extends {[key:string]:string}> extends BlockComponent<TableProps> {
+  defaultProps: TableProps = {
+    separator: true,
+    title: "",
+    cols: [],
+  };
+  datas: T[] = [];
+  render() {
+    const separateLine = () => {
+      return (
+        "+" +
+        this.props.cols.map((col) => {
+          return "-".repeat(col.width) + "+";
+        })
+      );
+    };
+    const headerLine = ()=>{
+      return "|" +
+      this.props.cols.map((col) => {
+        return align(col.align, col.width, col.title).render() + "|";
+      });
+    };
+    const dataLine = (data:T)=>{
+      return "|" +
+      this.props.cols.map((col) => {
+        return align(col.align, col.width, data[col.key]).render() + "|";
+      });
+    }
+    return [
+      separateLine(),
+      headerLine(),
+      separateLine(),
+      ...this.datas.map((data)=>{
+        return [
+          dataLine(data),
+          separateLine()
+        ]
+      })
+    ];
+  }
+}
+// ////////////////////////////////////////////////////////////
