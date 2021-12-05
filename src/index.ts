@@ -569,7 +569,7 @@ export class ProgressBar extends BlockComponent<ProgressBarProps> {
         "]" +
         chalkjs(
           chalk.yellow,
-          rightAlign(5, (this.current * 100).toFixed(this.props.fractionDigits))
+          rightAlign(this.props.fractionDigits + 4, (this.current * 100).toFixed(this.props.fractionDigits))
         ).render() +
         "%",
     ];
