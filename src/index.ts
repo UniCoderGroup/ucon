@@ -1,7 +1,6 @@
 import chalk from "chalk";
 import { stdout } from "process";
 import _ from "lodash";
-import assert from "node:assert";
 
 /**
  * Main.
@@ -203,15 +202,14 @@ export class Line {
   }
 }
 
-type DefaultProps<OP> = {[K keyof OP]:K keyof Required<OP>?}
+//type DefaultProps<OP> = {[K keyof OP]:K keyof Required<OP>?}
 
 /**
  * The base class of all the components
  */
 export abstract class Component<P> {
-  constructor(props: Partial<P>, con: UCon = ucon) {
-    assert(this.defaultProps !== undefined, "Undefined default properties!");
-    this.props = _.defaults(props, this.defaultProps);
+  constructor(props: P, con: UCon = ucon) {
+    this.props = props;
     this.con = con;
   }
 
@@ -307,13 +305,13 @@ export abstract class ContainerComponent<P> extends Component<P> {
    * Called when begin this Container.
    * Always calls `this.register`
    */
-  abstract begin(): void;
+  abstract begin(...args:any): void;
 
   /**
    * Called when end this Container.
    * Always calls `this.unregister`
    */
-  abstract end(): void;
+  abstract end(...args:any): void;
 
   /**
    * @returns The midware.
@@ -363,7 +361,7 @@ export const BlankContents: ContentsProps = {
 // Standard Components Region Begins.
 
 ///// Combiner /////////////////////////////////////////////
-export interface CombinerProps extends ContentsProps {}
+export interface CombinerProps extends ContentsProps { }
 export class Combiner extends InlineComponent<CombinerProps> {
   render() {
     let result = "";
@@ -406,10 +404,10 @@ export function align(
   width: number,
   ...contents: ContentsArgs
 ): Align {
-  type Aligner<T extends Align> = (width: number, ...contents: ContentsArgs) => T ;
+  type Aligner<T extends Align> = (width: number, ...contents: ContentsArgs) => T;
   const aligner = new Map<
     AlignDirection,
-    Aligner<LeftAlign|MiddleAlign|RightAlign> 
+    Aligner<LeftAlign | MiddleAlign | RightAlign>
   >([
     ["left", leftAlign],
     ["middle", middleAlign],
@@ -445,8 +443,8 @@ export class MiddleAlign extends Align {
   render() {
     let str = combiner(...this.props.contents).render();
     let strWidth = this.con.getStrDisplayWidth(str);
-    let leftMargin = (this.props.width - strWidth) / 2;
-    let rightMargin = this.props.width - leftMargin;
+    let leftMargin = Math.floor((this.props.width - strWidth) / 2);
+    let rightMargin = this.props.width - strWidth - leftMargin;
     return " ".repeat(leftMargin) + str + " ".repeat(rightMargin);
   }
 }
@@ -563,15 +561,15 @@ export class ProgressBar extends BlockComponent<ProgressBarProps> {
     const nOKed = Math.round(this.current * this.props.width);
     return [
       this.props.name +
-        ": [" +
-        chalkjs(chalk.bgWhite, " ".repeat(nOKed)).render() +
-        " ".repeat(this.props.width - nOKed) +
-        "]" +
-        chalkjs(
-          chalk.yellow,
-          rightAlign(this.props.fractionDigits + 4, (this.current * 100).toFixed(this.props.fractionDigits))
-        ).render() +
-        "%",
+      ": [" +
+      chalkjs(chalk.bgWhite, " ".repeat(nOKed)).render() +
+      " ".repeat(this.props.width - nOKed) +
+      "]" +
+      chalkjs(
+        chalk.yellow,
+        rightAlign(this.props.fractionDigits + 4, (this.current * 100).toFixed(this.props.fractionDigits))
+      ).render() +
+      "%",
     ];
   }
   progress(float: number): number {
@@ -586,60 +584,103 @@ export class ProgressBar extends BlockComponent<ProgressBarProps> {
 }
 ////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
-export interface TableProps {
+///// Table ////////////////////////////////////////////////
+export interface TableProps<T> {
   separator: boolean;
   title: string;
   cols: {
     title: string;
     width: number;
     align: AlignDirection;
-    key:string;
+    key: keyof T;
   }[];
 }
 /**
  * Table: A standard BlockComponent.
- * Shows a table in the screen
+ * Shows a table in the screen.
  */
-export class Table<T extends {[key:string]:string}> extends BlockComponent<TableProps> {
-  defaultProps: TableProps = {
+export class Table<T> extends BlockComponent<TableProps<T>> {
+  defaultProps: TableProps<T> = {
     separator: true,
     title: "",
     cols: [],
   };
+  // static charTable: {
+  //   borders: [
+  //     ["\u250F", "\u2501", "\u2513"],
+  //     ["\u2503", "", "\u2503"],
+  //     ["\u2517", "\u2501", "\u251B"]
+  //   ],
+  //   linkers:[
+  //   ]
+  // };
   datas: T[] = [];
-  render() {
-    const separateLine = () => {
-      return (
-        "+" +
-        this.props.cols.map((col) => {
-          return "-".repeat(col.width) + "+";
-        })
-      );
-    };
-    const headerLine = ()=>{
-      return "|" +
-      this.props.cols.map((col) => {
-        return align(col.align, col.width, col.title).render() + "|";
-      });
-    };
-    const dataLine = (data:T)=>{
-      return "|" +
-      this.props.cols.map((col) => {
-        return align(col.align, col.width, data[col.key]).render() + "|";
-      });
+  addData(...datas: T[]): void {
+    this.datas.concat(datas);
+  }
+  render(): string[] {
+    const titleLine = ()=>{
+      return ".----- "+this.props.title+" -----."
     }
-    return [
-      separateLine(),
-      headerLine(),
-      separateLine(),
-      ...this.datas.map((data)=>{
-        return [
-          dataLine(data),
-          separateLine()
-        ]
-      })
-    ];
+    const separateLine = () => {
+      return this.props.separator ?
+        ["+" + this.props.cols.map((col) => {
+          return "-".repeat(col.width) + "+";
+        }).join("")] : [];
+    };
+    const headerLine = () => {
+      return ["|" +
+        this.props.cols.map((col) => {
+          return align(col.align, col.width, col.title).render() + "|";
+        }).join("")];
+    };
+    const dataLine = (data: T) => {
+      return ["|" +
+        this.props.cols.map((col) => {
+          let str = new String(data[col.key]);
+          return align(col.align, col.width, str as string).render() + "|";
+        }).join("")];
+    }
+    const datasLines = () => {
+      let result: string[] = [];
+      this.datas.forEach((data) => {
+        result = result.concat(
+          dataLine(data)
+        );
+      });
+      return result;
+    }
+    return (
+      (new Array<string>()).concat(
+        titleLine(),
+        separateLine(),
+        headerLine(),
+        separateLine(),
+        datasLines(),
+        separateLine()
+      )
+    );
   }
 }
-// ////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+
+///// GroupBox /////////////////////////////////////////////
+export interface GroupBoxProps{
+  
+}
+export class GroupBox extends ContainerComponent<GroupBoxProps>{
+  begin(title:string){
+    this.con.log(".- "+title);
+    this.register();
+  }
+  getMidware(){
+    return (ctx: MidwareContext)=>{
+      return "+"+ctx.next();
+    }
+  }
+  end(){
+    this.unregister();
+    this.con.log("`-----");
+  }
+}
+////////////////////////////////////////////////////////////
