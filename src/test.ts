@@ -1,7 +1,26 @@
-import { ucon, ProgressBar, Table ,GroupBox} from "./index";
+import chalk from "chalk";
+import { ucon, ProgressBar, Table ,GroupBox, chalkjs} from "./index";
 
 let group = new GroupBox({});
 
+group.begin("Process Request ",chalkjs(chalk.blueBright,"#3"));
+group.sect("Parse>");
+group.log("METHOD: ",chalkjs(chalk.green,"GET"));
+group.log("PATH:   \"",chalkjs(chalk.yellow,"/home/index.html"),"\"");
+group.sect("Response>");
+let writeProgress = new ProgressBar({
+  name:"Write Response",
+  width:30,
+  fractionDigits:1
+});
+writeProgress.mount();
+const timer = setInterval(() => {
+  if(writeProgress.progress(0.1)>=1){
+    clearInterval(timer);
+    group.step("Responsed in ",chalkjs(chalk.yellow,"3ms"));
+    group.end();
+  }
+}, 30);
 
 // interface Process{
 //   Id:number,

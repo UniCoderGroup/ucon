@@ -4,6 +4,8 @@
 
 ## Overview
 
+![Response a request](/docs/media/response_a_request.gif)
+
 _UCON_ is a [Node.js](https://nodejs.org/) super framework for **I/O in terminals**.
 
 It is designed to make I/O in terminals [Visualize](#Visualize), [Componentize](#Componentize) and [Standardize](#Standardize).

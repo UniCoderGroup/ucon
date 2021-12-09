@@ -29,7 +29,7 @@ export class UCon {
   /**
    * Main log function.
    */
-  log(...objs: InlineComponent<unknown>[] | string[]): Line {
+  log(...objs: ContentsArgs): Line {
     const currentLine = new Line(this.y, combiner(...objs));
     for (const compo of this.stack) {
       currentLine.midwares.push(
@@ -305,18 +305,20 @@ export abstract class ContainerComponent<P> extends Component<P> {
    * Called when begin this Container.
    * Always calls `this.register`
    */
-  abstract begin(...args:any): void;
+  abstract begin(...args: any): void;
 
   /**
    * Called when end this Container.
    * Always calls `this.unregister`
    */
-  abstract end(...args:any): void;
+  abstract end(...args: any): void;
 
   /**
    * @returns The midware.
    */
   abstract getMidware(): Midware;
+
+  log = this.con.log.bind(this.con);
 }
 
 /**
@@ -335,7 +337,7 @@ export abstract class InlineComponent<P> extends Component<P> {
 /**
  * This type receive InlineComponents or strings as contents of an InlineComponent.
  */
-export type ContentsArgs = InlineComponent<unknown>[] | string[];
+export type ContentsArgs = (InlineComponent<unknown> | string)[];
 
 /**
  * This interface will be extended by an InlineComponent which receives contents.
@@ -506,40 +508,6 @@ export function chalkjs(
 }
 ////////////////////////////////////////////////////////////
 
-///// Color ////////////////////////////////////////////////
-export interface ColorProps extends ContentsProps {
-  r: number;
-  g: number;
-  b: number;
-}
-export class Color extends InlineComponent<ColorProps> {
-  defaultProps = {
-    r: 0,
-    g: 0,
-    b: 0,
-    ...BlankContents,
-  };
-  render() {
-    return chalkjs(
-      chalk.rgb(this.props.r, this.props.g, this.props.b),
-      ...this.props.contents
-    ).render();
-  }
-}
-/**
- * Color: A standard InlineComponent
- * It uses chalk.js to add color to the content.
- */
-export function color(
-  r: number,
-  g: number,
-  b: number,
-  ...contents: ContentsArgs
-): Color {
-  return new Color({ r, g, b, contents });
-}
-////////////////////////////////////////////////////////////
-
 ///// ProgressBar //////////////////////////////////////////
 export interface ProgressBarProps {
   width: number;
@@ -619,8 +587,8 @@ export class Table<T> extends BlockComponent<TableProps<T>> {
     this.datas.concat(datas);
   }
   render(): string[] {
-    const titleLine = ()=>{
-      return ".----- "+this.props.title+" -----."
+    const titleLine = () => {
+      return ".----- " + this.props.title + " -----."
     }
     const separateLine = () => {
       return this.props.separator ?
@@ -665,22 +633,38 @@ export class Table<T> extends BlockComponent<TableProps<T>> {
 ////////////////////////////////////////////////////////////
 
 ///// GroupBox /////////////////////////////////////////////
-export interface GroupBoxProps{
-  
+export interface GroupBoxProps {
+
 }
 export class GroupBox extends ContainerComponent<GroupBoxProps>{
-  begin(title:string){
-    this.con.log(".- "+title);
+  begin(...title:ContentsArgs) {
+    this.con.log("\u256D\u2574" ,chalkjs(chalk.bold,...title));
     this.register();
   }
-  getMidware(){
-    return (ctx: MidwareContext)=>{
-      return "+"+ctx.next();
+  getMidware() {
+    return function (ctx: MidwareContext) {
+      return "\u2502  " + ctx.next();
     }
   }
-  end(){
+  end() {
     this.unregister();
-    this.con.log("`-----");
+    this.con.log("\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500");
+  }
+  /**
+   * Show a section.
+   */
+  sect(...contents:ContentsArgs):void {
+    this.unregister();
+    this.con.log("\u251C\u2574" , ...contents);
+    this.register();
+  }
+  /**
+   * Show a step.
+   */
+  step(...contents:ContentsArgs):void {
+    this.unregister();
+    this.con.log("\u2502\u2576 " , ...contents);
+    this.register();
   }
 }
 ////////////////////////////////////////////////////////////

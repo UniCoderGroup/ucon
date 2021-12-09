@@ -4,6 +4,8 @@
 
 ## 简介
 
+![Response a request](/docs/media/response_a_request.gif)
+
 _UCON_ 是一个[Node.js](https://nodejs.org/)平台下**功能强大的终端 I/O 框架**。
 
 _UCON_ 的设计目标是使得终端 I/O [可视化](#可视化)、[组件化](#组件化)、[规范化](#规范化)。
