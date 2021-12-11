@@ -2,10 +2,22 @@ import UTty from "./utty"
 import chalk from "chalk";
 import _ from "lodash";
 
+type ContainerStack = ContainerComponent<unknown>[];
+
+export interface IOCon {
+  stack: ContainerStack;
+  get lineNum(): number;
+  log: (...objs: ContentsArgs) => Line;
+  redraw: (line: Line) => void;
+  insertLine: (y: number, line: Line) => void;
+  deleteLine: (line: Line) => void;
+  getStrDisplayWidth: (str: string) => number;
+}
+
 /**
  * Main.
  */
-export class UCon {
+export class UCon implements IOCon {
   constructor() {
   }
 
@@ -22,25 +34,37 @@ export class UCon {
   /**
    * Components that will add a midware to currentline.
    */
-  stack: ContainerComponent<unknown>[] = [];
+  stack: ContainerStack = [];
+
+  get lineNum(): number {
+    return this.lines.length;
+  }
 
   /**
    * Main log function.
    */
   log(...objs: ContentsArgs): Line {
-    const currentLine = new Line(this.tty.y, combiner(...objs));
-    for (const compo of this.stack) {
-      currentLine.midwares.push(
+    const currentLine = this.createLine(this.stack, ...objs);
+    currentLine.y = this.tty.y;
+    this.lines.push(currentLine);
+    this.tty.output(currentLine.render());
+    return currentLine;
+  }
+
+  /**
+   * Create line.
+   */
+  createLine(stack: ContainerStack, ...contents: ContentsArgs): Line {
+    const line = new Line(-1, combiner(...contents));
+    for (const compo of stack) {
+      line.midwares.push(
         compo.newLine({
-          line: currentLine,
-          midware: currentLine.midwares.length,
+          line: line,
+          midware: line.midwares.length,
         })
       );
     }
-    this.lines.push(currentLine);
-
-    this.tty.output(currentLine.render());
-    return currentLine;
+    return line;
   }
 
   /**
@@ -62,11 +86,28 @@ export class UCon {
   }
 
   /**
-   * Pop a line.
+   * Insert a line.
    */
-  popLine(line: Line = this.lines[this.lines.length - 1]): void {
+  insertLine(y: number, line: Line = this.lines[this.lines.length - 1]): void {
+    this.lines.push(this.lines[this.lines.length - 1]);
+    for (let i = this.lines.length - 1; i > y; i--) {
+      this.lines[i] = this.lines[i - 1];
+      this.lines[i].y++;
+      this.redraw(this.lines[i]);
+    }
+    this.tty.moveY(-1);
+    this.tty.clearLine(0);
+    this.lines[y] = line;
+    line.y = y;
+    this.redraw(this.lines[y]);
+  }
+
+  /**
+   * Delete a line.
+   */
+  deleteLine(line: Line = this.lines[this.lines.length - 1]): void {
     if (this.lines[line.y] !== line) {
-      throw new Error("This line has already been poped!");
+      throw new Error("This line has already been detached!");
     }
     for (let i = line.y + 1; i < this.lines.length; i++) {
       this.lines[i - 1] = this.lines[i];
@@ -76,7 +117,6 @@ export class UCon {
     this.lines.pop();
     this.tty.moveY(-1);
     this.tty.clearLine(0);
-    //TODO
   }
 
   getMidware(ref: RefMidware): Midware {
@@ -163,7 +203,7 @@ export class Line {
  * The base class of all the components
  */
 export abstract class Component<P> {
-  constructor(props: P, con: UCon = ucon) {
+  constructor(props: P, con: IOCon = ucon) {
     this.props = props;
     this.con = con;
   }
@@ -181,7 +221,7 @@ export abstract class Component<P> {
   /**
    * UCon console.
    */
-  readonly con: UCon;
+  readonly con: IOCon;
 }
 
 /**
@@ -204,16 +244,17 @@ export abstract class BlockComponent<P> extends Component<P> {
    * Print to the screen.
    */
   mount(): void {
+    this.mounted = true;
     const strs = this.render();
     for (const str of strs) {
       this.lines.push(this.con.log(str));
     }
-    this.mounted = true;
   }
 
   unmount(): void {
+    if (!this.mounted) throw new Error("Cannot unmount unmounted component!");
     for (let line of this.lines) {
-      this.con.popLine(line);
+      this.con.deleteLine(line);
     }
     this.mounted = false;
   }
@@ -517,18 +558,70 @@ export function chalkjs(
 }
 ////////////////////////////////////////////////////////////
 
+///// Composition //////////////////////////////////////////
+
+////////////////////////////////////////////////////////////
+
 ///// Switcher /////////////////////////////////////////////
-type SwitcherComponentConstructor<C extends BlockComponent<P>, P> = new (porps: P) => C;
+// TODO
+class SwitcherFakeCon implements IOCon {
+  constructor(con: IOCon) {
+    this.con = con;
+    this.stack = _.clone(con.stack);
+    this.y = con.lineNum;
+  }
+  con: IOCon;
+  stack: ContainerStack;
+  y:number;
+  lines:Line[]=[];
+  get lineNum(): number {
+    return this.lines.length;
+  }
+  log(...objs: ContentsArgs): Line {
+    return this.con.log(...objs);
+  }
+  redraw(line: Line): void {
+    this.con.redraw(this.lines[line.y]);
+  }
+  insertLine(y: number, line: Line): void {
+    this.lines.push(this.lines[this.lines.length - 1]);
+    for (let i = this.lines.length - 1; i > y; i--) {
+      this.lines[i] = this.lines[i - 1];
+      this.lines[i].y++;
+      this.redraw(this.lines[i]);
+    }
+    this.lines[y] = line;
+    line.y = y;
+    this.redraw(this.lines[y]);
+  }
+  deleteLine(line: Line): void {
+    if (this.lines[line.y] !== line) {
+      throw new Error("This line has already been detached!");
+    }
+    for (let i = line.y + 1; i < this.lines.length; i++) {
+      this.lines[i - 1] = this.lines[i];
+      this.lines[i - 1].y--;
+      this.redraw(this.lines[i - 1]);
+    }
+    this.lines.pop();
+    this.tty.moveY(-1);
+    this.tty.clearLine(0);
+  }
+  getStrDisplayWidth(str: string): number {
+    return this.con.getStrDisplayWidth(str);
+  }
+
+}
+type BlockComponentConstructor<C extends BlockComponent<P>, P> = new (porps: P, con?: IOCon) => C;
 export interface SwitcherProps<
   C1 extends BlockComponent<P1>, P1,
   C2 extends BlockComponent<P2>, P2> {
   prop1: P1;
-  ctor1: SwitcherComponentConstructor<C1, P1>;
+  ctor1: BlockComponentConstructor<C1, P1>;
   prop2: P2;
-  ctor2: SwitcherComponentConstructor<C2, P2>;
+  ctor2: BlockComponentConstructor<C2, P2>;
 }
-type SwitcherCompID = 1 | 2;
-type SwitcherState = 0 | SwitcherCompID;
+type SwitcherState = 0 | 1 | 2;
 /**
  * Switcher: A standard BlockComponent.
  * Switch two BlockComponents.
@@ -537,30 +630,40 @@ export class Switcher<
   C1 extends BlockComponent<P1>, P1,
   C2 extends BlockComponent<P2>, P2
   > extends BlockComponent<SwitcherProps<C1, P1, C2, P2>>{
+  stack: ContainerStack = [];
+  fakeCon: IOCon | undefined = undefined;
   state: SwitcherState = 0;
-  comp1: C1 = new this.props.ctor1(this.props.prop1);
-  comp2: C2 = new this.props.ctor2(this.props.prop2);
+  comp1: C1 | undefined = undefined;
+  comp2: C2 | undefined = undefined;
   mount(state: SwitcherState = 0) {
-    this.switch(state);
-    if (this.state !== 0) {
-      this.getComp(this.state).mount();
-    }
     this.mounted = true;
+    this.fakeCon = new SwitcherFakeCon(this.con);
+    this.comp1 = new this.props.ctor1(this.props.prop1, this.fakeCon);
+    this.comp2 = new this.props.ctor2(this.props.prop2, this.fakeCon);
+    this.switch(state);
+    this.stack = _.clone(this.con.stack);
+    if (this.state !== 0) {
+      this.getComp(this.state)!.mount();
+      this.lines = this.getComp(this.state)!.lines;
+    }
   }
   unmount() {
+    if (!this.mounted) throw new Error("Cannot unmount unmounted component!");
     if (this.state !== 0) {
-      this.getComp(this.state).unmount();
+      this.getComp(this.state)!.unmount();
     }
+    this.lines = [];
     this.mounted = false;
   }
   render() {
+    if (!this.mounted) return [];
     switch (this.state) {
       case 0:
         return [];
       case 1:
-        return this.comp1.render();
+        return this.comp1!.render();
       case 2:
-        return this.comp2.render();
+        return this.comp2!.render();
       default:
         throw new Error("Unknown switcher state!");
     }
@@ -568,14 +671,14 @@ export class Switcher<
   clear(): void {
     this.switch(0);
   }
-  getComp(id: SwitcherCompID): C1 | C2 {
+  getComp(id: SwitcherState): C1 | C2 | undefined {
     switch (id) {
       case 1:
         return this.comp1;
       case 2:
         return this.comp2;
       default:
-        throw new Error("Unknown switcher component ID!");
+        return undefined;
     }
   }
   switch(to: SwitcherState): void {
@@ -594,16 +697,17 @@ export class Switcher<
         if (this.state === 0) {
           throw new Error("Switcher Logical error!");
         }
-        this.getComp(this.state).unmount();
+        this.getComp(this.state)!.unmount();
       }
       if (mount) {
         if (to === 0) {
           throw new Error("Switcher Logical error!");
         }
-        this.getComp(to).mount();
+        this.getComp(to)!.mount();
       }
     }
     this.state = to;
+    this.lines = this.state === 0 ? [] : this.getComp(this.state)!.lines;
   }
 }
 ////////////////////////////////////////////////////////////

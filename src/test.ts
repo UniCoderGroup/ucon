@@ -19,6 +19,7 @@ let writeProgress = new Switcher<ProgressBar, ProgressBarProps, Text, TextProp>(
   prop2: symbolIcon("tick").render() + "Response writing completed."
 });
 writeProgress.mount(1);
+group.log("xxx");
 const timer = setInterval(() => {
   if (writeProgress.comp1.progress(0.1) >= 1) {
     clearInterval(timer);
