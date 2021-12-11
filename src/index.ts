@@ -1,20 +1,18 @@
+import UTty from "./utty"
 import chalk from "chalk";
-import { stdout } from "process";
 import _ from "lodash";
 
 /**
  * Main.
  */
 export class UCon {
-  /**
-   * Curent y coord in terminal (start by 0).
-   */
-  y = 0;
+  constructor() {
+  }
 
   /**
-   * The max of y
+   * An instance of UTty.
    */
-  yMax = 0;
+  tty = new UTty(process.stdout);
 
   /**
    * Lines. Each Line may have more than one real line.
@@ -30,7 +28,7 @@ export class UCon {
    * Main log function.
    */
   log(...objs: ContentsArgs): Line {
-    const currentLine = new Line(this.y, combiner(...objs));
+    const currentLine = new Line(this.tty.y, combiner(...objs));
     for (const compo of this.stack) {
       currentLine.midwares.push(
         compo.newLine({
@@ -41,7 +39,7 @@ export class UCon {
     }
     this.lines.push(currentLine);
 
-    this.output(currentLine.render());
+    this.tty.output(currentLine.render());
     return currentLine;
   }
 
@@ -56,72 +54,27 @@ export class UCon {
   }
 
   /**
-   * Write str and `'\n'` to stdout,
-   * and add this.y according to number of `'\n'`s.
-   */
-  output(str: string, addYMax: boolean = true): void {
-    stdout.write(str + "\n");
-    for (let c of str) {
-      if (c === "\n") {
-        this.y++;
-        if (addYMax) this.yMax++;
-      }
-    }
-    this.y++; // add the additional "\n"
-    if (addYMax) this.yMax++;
-  }
-
-  /**
-   *  Reset `x` coord to 0
-   */
-  resetX(): void {
-    stdout.cursorTo(0);
-  }
-
-  /**
-   * Move y coord of cursor
-   * and add `dy` to `this.y`
-   */
-  moveY(dy: number): void {
-    stdout.moveCursor(0, dy);
-    this.y += dy;
-  }
-
-  /**
-   * Move to the first line of line,
-   * and reset x coord to `0`.
-   * [BUG]: It cannot go to row that above the screen
-   */
-  moveToLine(line: Line): void {
-    this.resetX();
-    this.moveY(-(this.y - line.y));
-  }
-
-  /**
-   * Move to last line according to `this.yMax`.
-   */
-  moveToLastLine(): void {
-    this.resetX();
-    this.moveY(this.yMax - this.y);
-  }
-
-  /**
-   * Clear current line.
-   * @param dir see param `dir` in http://nodejs.org/api/tty.html#writestreamclearlinedir-callback
-   */
-  clearLine(dir: -1 | 0 | 1 = 0): void {
-    stdout.clearLine(dir);
-  }
-
-  /**
    * Redraw the line.
    * @param line Line to redraw
    */
   redraw(line: Line): void {
-    this.moveToLine(line);
-    this.clearLine(0);
-    this.output(line.render(), false);
-    this.moveToLastLine();
+    this.tty.redraw(line.y, line.render());
+  }
+
+  /**
+   *
+   */
+  popLine(line: Line): void {
+    if (this.lines[line.y] !== line) {
+      throw new Error("This line has already been poped!");
+    }
+    for (let i = line.y + 1; i < this.lines.length; i++) {
+      this.lines[i - 1] = this.lines[i];
+      this.lines[i - 1].y--;
+      this.redraw(this.lines[i - 1]);
+    }
+    this.lines.pop();
+    //TODO
   }
 
   getMidware(ref: RefMidware): Midware {
@@ -153,9 +106,9 @@ export interface RefMidware {
  * Line.
  */
 export class Line {
-  constructor(y: number, first: InlineComponent<unknown>) {
+  constructor(y: number, content: InlineComponent<unknown>) {
     this.y = y;
-    this.first = first;
+    this.content = content;
   }
 
   /**
@@ -171,7 +124,7 @@ export class Line {
   /**
    * The first InlineComponent
    */
-  first: InlineComponent<unknown>;
+  content: InlineComponent<unknown>;
 
   /**
    * Render this line.
@@ -186,7 +139,7 @@ export class Line {
     const createNext = (n: number) => {
       if (n === this.midwares.length - 1) {
         // Last midware
-        const first = this.first;
+        const first = this.content;
         return () => {
           return first.render();
         };
@@ -242,7 +195,6 @@ export abstract class BlockComponent<P> extends Component<P> {
 
   /**
    * Print to the screen.
-   * **Only to be called once!**
    */
   mount(): void {
     const strs = this.render();
@@ -251,14 +203,32 @@ export abstract class BlockComponent<P> extends Component<P> {
     }
   }
 
+  unmount(): void {
+    for (let line of this.lines) {
+      this.con.popLine(line);
+    }
+  }
+
   /**
    * Redraw the line of `offsetLine`
    * @param offsetLine which line to redraw.
    */
   redraw(offsetLine = 0): void {
-    this.lines[offsetLine].first = combiner(this.render()[offsetLine]);
+    this.lines[offsetLine].content = combiner(this.render()[offsetLine]);
     //If no proxy
     this.con.redraw(this.lines[offsetLine]);
+  }
+
+  /**
+   * Redraw all lines.
+   */
+  redrawAll(): void {
+    let strs = this.render();
+    for (let i in strs) {
+      this.lines[i].content = combiner(strs[i]);
+      //If no proxy
+      this.con.redraw(this.lines[i]);
+    }
   }
 
   /**
@@ -386,6 +356,36 @@ export function combiner(...contents: ContentsArgs): Combiner {
 }
 ////////////////////////////////////////////////////////////
 
+///// Symbol ///////////////////////////////////////////////
+export type SymbolIconNames = "tick" | "alert" | "cross" | "info";
+export interface SymbolIconProps {
+  name: SymbolIconNames;
+}
+export class SymbolIcon extends InlineComponent<SymbolIconProps>{
+  SymbolCharTable = new Map<SymbolIconNames, string>([
+    ["tick", "\u2714"],
+    ["alert", "\u26A0"],
+    ["cross", "\u274C"],
+    ["info", "\u2139"]
+  ]);
+  render() {
+    let iconStr = this.SymbolCharTable.get(this.props.name);
+    if (iconStr === undefined) {
+      throw new Error(this.props.name + " is not an icon!");
+    }
+    return iconStr;
+  }
+}
+/**
+ * Symbol: A standard InlineComponent.
+ * It shows a symbol in terminal.
+ * @param name Name of the symbol.
+ */
+export function symbolIcon(name: SymbolIconNames) {
+  return new SymbolIcon({ name });
+}
+////////////////////////////////////////////////////////////
+
 ///// Align ////////////////////////////////////////////////
 export type AlignDirection = "left" | "middle" | "right";
 export interface AlignProps extends ContentsProps {
@@ -508,6 +508,76 @@ export function chalkjs(
 }
 ////////////////////////////////////////////////////////////
 
+///// Switcher /////////////////////////////////////////////
+type SwitcherComponentConstructor<C extends BlockComponent<P>, P> = new (porps: P) => C;
+export interface SwitcherProps<
+  C1 extends BlockComponent<P1>, P1,
+  C2 extends BlockComponent<P2>, P2> {
+  prop1: P1;
+  ctor1: SwitcherComponentConstructor<C1, P1>;
+  prop2: P2;
+  ctor2: SwitcherComponentConstructor<C2, P2>;
+}
+type SwitcherState = 0 | 1 | 2;
+/**
+ * Switcher: A standard BlockComponent.
+ * Switch two BlockComponents.
+ */
+export class Switcher<
+  C1 extends BlockComponent<P1>, P1,
+  C2 extends BlockComponent<P2>, P2
+  > extends BlockComponent<SwitcherProps<C1, P1, C2, P2>>{
+  state: SwitcherState = 0;
+  comp1: C1 = new this.props.ctor1(this.props.prop1);
+  comp2: C2 = new this.props.ctor2(this.props.prop2);
+  render() {
+    switch (this.state) {
+      case 0:
+        return [];
+      case 1:
+        return this.comp1.render();
+      case 2:
+        return this.comp2.render();
+      default:
+        throw new Error("Unknown switcher state!");
+    }
+  }
+  clear(): void {
+
+  }
+  setDisplay(to: SwitcherState): void {
+    let redraw = false;
+    if (to !== this.state) {
+      redraw = true;
+    }
+    this.state = to;
+    if (redraw) {
+    }
+  }
+}
+////////////////////////////////////////////////////////////
+
+///// Text /////////////////////////////////////////////////
+export type TextProp = string;
+/**
+ * Text: A standard BlockComponent.
+ * Shows lines of text in the screen.
+ */
+export class Text extends BlockComponent<TextProp>{
+  render() {
+    let result = [""]
+    for (let c of this.props) {
+      if (c === "\n") {
+        result.push("");
+      } else {
+        result[result.length - 1] += c;
+      }
+    }
+    return result;
+  }
+}
+////////////////////////////////////////////////////////////
+
 ///// ProgressBar //////////////////////////////////////////
 export interface ProgressBarProps {
   width: number;
@@ -516,7 +586,7 @@ export interface ProgressBarProps {
 }
 /**
  * ProgressBar: A standard BlockComponent.
- * Shows a progress in the screen
+ * Shows a progress in the screen.
  */
 export class ProgressBar extends BlockComponent<ProgressBarProps> {
   defaultProps = {
@@ -637,8 +707,8 @@ export interface GroupBoxProps {
 
 }
 export class GroupBox extends ContainerComponent<GroupBoxProps>{
-  begin(...title:ContentsArgs) {
-    this.con.log("\u256D\u2574" ,chalkjs(chalk.bold,...title));
+  begin(...title: ContentsArgs) {
+    this.con.log("\u256D\u2574", chalkjs(chalk.bold, ...title));
     this.register();
   }
   getMidware() {
@@ -653,17 +723,17 @@ export class GroupBox extends ContainerComponent<GroupBoxProps>{
   /**
    * Show a section.
    */
-  sect(...contents:ContentsArgs):void {
+  sect(...contents: ContentsArgs): void {
     this.unregister();
-    this.con.log("\u251C\u2574" , ...contents);
+    this.con.log("\u251C\u2574", ...contents);
     this.register();
   }
   /**
    * Show a step.
    */
-  step(...contents:ContentsArgs):void {
+  step(...contents: ContentsArgs): void {
     this.unregister();
-    this.con.log("\u2502\u2576 " , ...contents);
+    this.con.log("\u2502\u2576 ", ...contents);
     this.register();
   }
 }

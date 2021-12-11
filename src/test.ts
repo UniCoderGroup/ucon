@@ -1,26 +1,34 @@
 import chalk from "chalk";
-import { ucon, ProgressBar, Table ,GroupBox, chalkjs} from "./index";
+import { ucon, ProgressBar, Table, GroupBox, chalkjs, combiner, symbolIcon, Switcher, ProgressBarProps, Text, TextProp } from "./index";
 
 let group = new GroupBox({});
 
-group.begin("Process Request ",chalkjs(chalk.blueBright,"#3"));
+group.begin("Process Request ", chalkjs(chalk.blueBright, "#3"));
 group.sect("Parse>");
-group.log("METHOD: ",chalkjs(chalk.green,"GET"));
-group.log("PATH:   \"",chalkjs(chalk.yellow,"/home/index.html"),"\"");
+group.log("METHOD: ", chalkjs(chalk.green, "GET"));
+group.log("PATH:   \"", chalkjs(chalk.yellow, "/home/index.html"), "\"");
 group.sect("Response>");
-let writeProgress = new ProgressBar({
-  name:"Write Response",
-  width:30,
-  fractionDigits:1
+let writeProgress = new Switcher<ProgressBar, ProgressBarProps, Text, TextProp>({
+  ctor1: ProgressBar,
+  prop1: {
+    name: "Write Response",
+    width: 30,
+    fractionDigits: 1
+  },
+  ctor2: Text,
+  prop2: symbolIcon("tick").render() + "Response writing completed."
 });
 writeProgress.mount();
 const timer = setInterval(() => {
-  if(writeProgress.progress(0.1)>=1){
+  if (writeProgress.comp1.progress(0.1) >= 1) {
     clearInterval(timer);
-    group.step("Responsed in ",chalkjs(chalk.yellow,"3ms"));
+    // writeProgress.lines[0].content = combiner(symbol("tick"), "Response writing completed.");
+    // ucon.redraw(writeProgress.lines[0]);
+    writeProgress.setDisplay(2);
+    group.step("Responsed in ", chalkjs(chalk.yellow, "3ms"));
     group.end();
   }
-}, 30);
+}, 100);
 
 // interface Process{
 //   Id:number,
