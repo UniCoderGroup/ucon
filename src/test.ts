@@ -18,13 +18,11 @@ let writeProgress = new Switcher<ProgressBar, ProgressBarProps, Text, TextProp>(
   ctor2: Text,
   prop2: symbolIcon("tick").render() + "Response writing completed."
 });
-writeProgress.mount();
+writeProgress.mount(1);
 const timer = setInterval(() => {
   if (writeProgress.comp1.progress(0.1) >= 1) {
     clearInterval(timer);
-    // writeProgress.lines[0].content = combiner(symbol("tick"), "Response writing completed.");
-    // ucon.redraw(writeProgress.lines[0]);
-    writeProgress.setDisplay(2);
+    writeProgress.switch(2);
     group.step("Responsed in ", chalkjs(chalk.yellow, "3ms"));
     group.end();
   }

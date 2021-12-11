@@ -62,9 +62,9 @@ export class UCon {
   }
 
   /**
-   *
+   * Pop a line.
    */
-  popLine(line: Line): void {
+  popLine(line: Line = this.lines[this.lines.length-1]): void {
     if (this.lines[line.y] !== line) {
       throw new Error("This line has already been poped!");
     }
@@ -74,6 +74,8 @@ export class UCon {
       this.redraw(this.lines[i - 1]);
     }
     this.lines.pop();
+    this.tty.moveY(-1);
+    this.tty.clearLine(0);
     //TODO
   }
 
@@ -194,6 +196,11 @@ export abstract class BlockComponent<P> extends Component<P> {
   lines: Line[] = [];
 
   /**
+   * Is this component mounted.
+   */
+  mounted = false;
+
+  /**
    * Print to the screen.
    */
   mount(): void {
@@ -201,12 +208,14 @@ export abstract class BlockComponent<P> extends Component<P> {
     for (const str of strs) {
       this.lines.push(this.con.log(str));
     }
+    this.mounted = true;
   }
 
   unmount(): void {
     for (let line of this.lines) {
       this.con.popLine(line);
     }
+    this.mounted = false;
   }
 
   /**
@@ -518,7 +527,8 @@ export interface SwitcherProps<
   prop2: P2;
   ctor2: SwitcherComponentConstructor<C2, P2>;
 }
-type SwitcherState = 0 | 1 | 2;
+type SwitcherCompID = 1 | 2;
+type SwitcherState = 0 | SwitcherCompID;
 /**
  * Switcher: A standard BlockComponent.
  * Switch two BlockComponents.
@@ -530,6 +540,19 @@ export class Switcher<
   state: SwitcherState = 0;
   comp1: C1 = new this.props.ctor1(this.props.prop1);
   comp2: C2 = new this.props.ctor2(this.props.prop2);
+  mount(state:SwitcherState = 0){
+    this.switch(state);
+    if(this.state!==0){
+      this.getComp(this.state).mount();
+    }
+    this.mounted = true;
+  }
+  unmount(){
+    if(this.state!==0){
+      this.getComp(this.state).unmount();
+    }
+    this.mounted = false;
+  }
   render() {
     switch (this.state) {
       case 0:
@@ -543,16 +566,44 @@ export class Switcher<
     }
   }
   clear(): void {
-
+    this.switch(0);
   }
-  setDisplay(to: SwitcherState): void {
-    let redraw = false;
-    if (to !== this.state) {
-      redraw = true;
+  getComp(id: SwitcherCompID): C1 | C2 {
+    switch (id) {
+      case 1:
+        return this.comp1;
+      case 2:
+        return this.comp2;
+      default:
+        throw new Error("Unknown switcher component ID!");
+    }
+  }
+  switch(to: SwitcherState): void {
+    if (this.mounted) {
+      let unmount = false;
+      let mount = false;
+      if (to !== this.state) {
+        if (this.state !== 0) {
+          unmount = true;
+        }
+        if (to !== 0) {
+          mount = true;
+        }
+      }
+      if (unmount) {
+        if (this.state === 0) {
+          throw new Error("Switcher Logical error!");
+        }
+        this.getComp(this.state).unmount();
+      }
+      if (mount) {
+        if (to === 0) {
+          throw new Error("Switcher Logical error!");
+        }
+        this.getComp(to).mount();
+      }
     }
     this.state = to;
-    if (redraw) {
-    }
   }
 }
 ////////////////////////////////////////////////////////////
