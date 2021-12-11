@@ -64,7 +64,7 @@ export class UCon {
   /**
    * Pop a line.
    */
-  popLine(line: Line = this.lines[this.lines.length-1]): void {
+  popLine(line: Line = this.lines[this.lines.length - 1]): void {
     if (this.lines[line.y] !== line) {
       throw new Error("This line has already been poped!");
     }
@@ -540,15 +540,15 @@ export class Switcher<
   state: SwitcherState = 0;
   comp1: C1 = new this.props.ctor1(this.props.prop1);
   comp2: C2 = new this.props.ctor2(this.props.prop2);
-  mount(state:SwitcherState = 0){
+  mount(state: SwitcherState = 0) {
     this.switch(state);
-    if(this.state!==0){
+    if (this.state !== 0) {
       this.getComp(this.state).mount();
     }
     this.mounted = true;
   }
-  unmount(){
-    if(this.state!==0){
+  unmount() {
+    if (this.state !== 0) {
       this.getComp(this.state).unmount();
     }
     this.mounted = false;
