@@ -24,7 +24,8 @@ export default class UTty {
      * Write str and `'\n'` to stdout,
      * and add this.y according to number of `'\n'`s.
      */
-    output(str: string, addYMax: boolean = true): void {
+    output(str: string, addYMax: boolean = true, line: number = this.yMax): void {
+        this.moveToLine(line);
         this.tty.write(str + "\n");
         for (let c of str) {
             if (c === "\n") {
@@ -39,10 +40,10 @@ export default class UTty {
     /**
      * Redraw the line.
      */
-    redraw(y: number, str: string): void {
-        this.moveToLine(y);
+    redraw(line: number, str: string): void {
+        this.moveToLine(line);
         this.clearLine(0);
-        this.output(str, false);
+        this.output(str, false, line);
         this.moveToLastLine();
     }
 
@@ -81,10 +82,21 @@ export default class UTty {
     }
 
     /**
-     * Clear current line.
+     * Clear a line.
      * @param dir see param `dir` in http://nodejs.org/api/tty.html#writestreamclearlinedir-callback
      */
-    clearLine(dir: -1 | 0 | 1 = 0): void {
+    clearLine(dir: -1 | 0 | 1 = 0, line: number = this.y): void {
+        this.moveToLine(line);
         this.tty.clearLine(dir);
+    }
+
+    /**
+     * In a terminal, some characters (such as Chinese characters) have 2 width,
+     * while some may not display.
+     * This function aimed to resolve the str to get the display width.
+     * @returns The display length of str.
+     */
+    getStrDisplayWidth(str: string): number {
+        return str.length;
     }
 }

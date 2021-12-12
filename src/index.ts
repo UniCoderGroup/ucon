@@ -1,23 +1,45 @@
 import UTty from "./utty"
 import chalk from "chalk";
 import _ from "lodash";
+import { runInThisContext } from "node:vm";
 
-type ContainerStack = ContainerComponent<unknown>[];
+type ContainerStack = ContainerComponent[];
 
-export interface IOCon {
-  stack: ContainerStack;
+// export interface IOCon {
+//   stack: ContainerStack;
+//   get lineNum(): number;
+//   log: (...objs: ContentsArgs) => Line;
+//   redraw: (line: Line) => void;
+//   insertLine: (y: number, line: Line) => void;
+//   deleteLine: (line: Line) => void;
+//   getStrDisplayWidth: (str: string) => number;
+// }
+
+export interface ConWithUTty {
+  get tty(): UTty;
   get lineNum(): number;
-  log: (...objs: ContentsArgs) => Line;
-  redraw: (line: Line) => void;
-  insertLine: (y: number, line: Line) => void;
-  deleteLine: (line: Line) => void;
-  getStrDisplayWidth: (str: string) => number;
+}
+export interface ConForBlock extends ConWithUTty {
+  get stack(): ContainerStack;
+  insertLine(y: number, line: Line): void;
+  deleteLine(line: Line): void;
+  addLine(content: InlineComponent): Line;
+  redraw(line: Line): void;
+}
+export interface ConForContainer extends ConWithUTty {
+  registerContainer(container: ContainerComponent): void;
+  unregisterContainer(container: ContainerComponent): void
+  addLine(content: InlineComponent): Line;
+  log(...objs: ContentsArgs): Line;
+}
+export interface ConForInline extends ConWithUTty {
+
 }
 
 /**
  * Main.
  */
-export class UCon implements IOCon {
+export class UCon implements ConForBlock, ConForContainer, ConForInline {
   constructor() {
   }
 
@@ -41,43 +63,6 @@ export class UCon implements IOCon {
   }
 
   /**
-   * Main log function.
-   */
-  log(...objs: ContentsArgs): Line {
-    const currentLine = this.createLine(this.stack, ...objs);
-    currentLine.y = this.tty.y;
-    this.lines.push(currentLine);
-    this.tty.output(currentLine.render());
-    return currentLine;
-  }
-
-  /**
-   * Create line.
-   */
-  createLine(stack: ContainerStack, ...contents: ContentsArgs): Line {
-    const line = new Line(-1, combiner(...contents));
-    for (const compo of stack) {
-      line.midwares.push(
-        compo.newLine({
-          line: line,
-          midware: line.midwares.length,
-        })
-      );
-    }
-    return line;
-  }
-
-  /**
-   * In a terminal, some characters (such as Chinese characters) have 2 width,
-   * while some may not display.
-   * This function aimed to resolve the str to get the display width.
-   * @returns The display length of str.
-   */
-  getStrDisplayWidth(str: string): number {
-    return str.length;
-  }
-
-  /**
    * Redraw the line.
    * @param line Line to redraw
    */
@@ -88,7 +73,7 @@ export class UCon implements IOCon {
   /**
    * Insert a line.
    */
-  insertLine(y: number, line: Line = this.lines[this.lines.length - 1]): void {
+  insertLine(y: number, line: Line): void {
     this.lines.push(this.lines[this.lines.length - 1]);
     for (let i = this.lines.length - 1; i > y; i--) {
       this.lines[i] = this.lines[i - 1];
@@ -97,9 +82,10 @@ export class UCon implements IOCon {
     }
     this.tty.moveY(-1);
     this.tty.clearLine(0);
+    this.tty.moveToLastLine();
     this.lines[y] = line;
     line.y = y;
-    this.redraw(this.lines[y]);
+    this.redraw(line);
   }
 
   /**
@@ -119,6 +105,17 @@ export class UCon implements IOCon {
     this.tty.clearLine(0);
   }
 
+  /**
+   * Add a line in the end of lines.
+   */
+  addLine(content: InlineComponent): Line {
+    const currentLine = createLine(this.stack, content);
+    currentLine.y = this.tty.y;
+    this.lines.push(currentLine);
+    this.tty.output(currentLine.render());
+    return currentLine;
+  }
+
   getMidware(ref: RefMidware): Midware {
     // [TODO]:Add Asserts.
     return ref.line.midwares[ref.midware];
@@ -128,6 +125,27 @@ export class UCon implements IOCon {
     // [TODO]:Add Asserts.
     ref.line.midwares[ref.midware] = newOne;
     if (redraw) this.redraw(ref.line);
+  }
+
+  registerContainer(container: ContainerComponent): void {
+    this.stack.push(container);
+  }
+
+  unregisterContainer(container: ContainerComponent): void {
+    let pop = this.stack.pop();
+    if (pop !== container) {
+      if (pop !== undefined) {
+        this.stack.push(pop);
+      }
+      throw new Error("This ContainerComponent wrongly unregistered!");
+    }
+  }
+
+  /**
+   * Main log function.
+   */
+  log(...objs: ContentsArgs): Line {
+    return this.addLine(combiner(...objs));
   }
 }
 
@@ -148,7 +166,7 @@ export interface RefMidware {
  * Line.
  */
 export class Line {
-  constructor(y: number, content: InlineComponent<unknown>) {
+  constructor(y: number, content: InlineComponent) {
     this.y = y;
     this.content = content;
   }
@@ -166,7 +184,7 @@ export class Line {
   /**
    * The first InlineComponent
    */
-  content: InlineComponent<unknown>;
+  content: InlineComponent;
 
   /**
    * Render this line.
@@ -197,13 +215,27 @@ export class Line {
   }
 }
 
-//type DefaultProps<OP> = {[K keyof OP]:K keyof Required<OP>?}
+/**
+ * Create line.
+ */
+function createLine(stack: ContainerStack, content: InlineComponent): Line {
+  const line = new Line(-1, content);
+  for (const compo of stack) {
+    line.midwares.push(
+      compo.newLine({
+        line: line,
+        midware: line.midwares.length,
+      })
+    );
+  }
+  return line;
+}
 
 /**
  * The base class of all the components
  */
-export abstract class Component<P> {
-  constructor(props: P, con: IOCon = ucon) {
+export abstract class Component<P, C> {
+  constructor(props: P, con: C) {
     this.props = props;
     this.con = con;
   }
@@ -221,7 +253,7 @@ export abstract class Component<P> {
   /**
    * UCon console.
    */
-  readonly con: IOCon;
+  readonly con: C;
 }
 
 /**
@@ -229,7 +261,11 @@ export abstract class Component<P> {
  * Component that print several lines in the screen.
  * @example Such as `ProgressBar`
  */
-export abstract class BlockComponent<P> extends Component<P> {
+export abstract class BlockComponent<P = unknown> extends Component<P, ConForBlock> {
+  constructor(props: P, con: ConForBlock = ucon) {
+    super(props, con);
+  }
+
   /**
    * Lines of the output.
    */
@@ -247,7 +283,9 @@ export abstract class BlockComponent<P> extends Component<P> {
     this.mounted = true;
     const strs = this.render();
     for (const str of strs) {
-      this.lines.push(this.con.log(str));
+      this.lines.push(
+        this.con.addLine(inlStr(str)
+        ));
     }
   }
 
@@ -293,23 +331,23 @@ export abstract class BlockComponent<P> extends Component<P> {
  * Component that can process the log text.
  * @example Such as `GroupBox`
  */
-export abstract class ContainerComponent<P> extends Component<P> {
+export abstract class ContainerComponent<P = unknown> extends Component<P, ConForContainer> {
+  constructor(props: P, con: ConForContainer = ucon) {
+    super(props, con);
+  }
+
   /**
    * Register to Console's Component Stack.
    */
   register(): void {
-    this.con.stack.push(this);
+    this.con.registerContainer(this);
   }
 
   /**
    * Register itself
    */
   unregister(): void {
-    if (this.con.stack.pop() !== this) {
-      // This happends when some ContainerComponent
-      //   registered/unregistered incorrectly.
-      throw new Error("Stack is not right!");
-    }
+    this.con.unregisterContainer(this);
   }
 
   /**
@@ -346,7 +384,11 @@ export abstract class ContainerComponent<P> extends Component<P> {
  * Component that decorates one line
  * @example Such as `Combiner`,`Italitic`
  */
-export abstract class InlineComponent<P> extends Component<P> {
+export abstract class InlineComponent<P = unknown> extends Component<P, ConForInline> {
+  constructor(props: P, con: ConForInline = ucon) {
+    super(props, con);
+  }
+
   /**
    * Render returns the decorated text.
    * Wait for you to impl it.
@@ -357,7 +399,7 @@ export abstract class InlineComponent<P> extends Component<P> {
 /**
  * This type receive InlineComponents or strings as contents of an InlineComponent.
  */
-export type ContentsArgs = (InlineComponent<unknown> | string)[];
+export type ContentsArgs = (InlineComponent | string)[];
 
 /**
  * This interface will be extended by an InlineComponent which receives contents.
@@ -378,9 +420,25 @@ export const BlankContents: ContentsProps = {
 //  * The creator of a InlineComponent.
 //  * It works like a grammar sugar.
 //  */
-// export type InlineComponentCreator = (args: any) => InlineComponent<unknown>;
+// export type InlineComponentCreator = (args: any) => InlineComponent;
 
 // Standard Components Region Begins.
+
+///// InlStr ///////////////////////////////////////////////
+export type InlStrProps = string;
+export class InlStr extends InlineComponent<InlStrProps> {
+  render() {
+    return this.props;
+  }
+}
+/**
+ * InlStr: A standard InlineComponent.
+ * It converts string to InlineComponent.
+ */
+export function inlStr(str: string): InlStr {
+  return new InlStr(str);
+}
+////////////////////////////////////////////////////////////
 
 ///// Combiner /////////////////////////////////////////////
 export interface CombinerProps extends ContentsProps { }
@@ -476,7 +534,7 @@ export function align(
 export class LeftAlign extends Align {
   render() {
     let str = combiner(...this.props.contents).render();
-    let strWidth = this.con.getStrDisplayWidth(str);
+    let strWidth = this.con.tty.getStrDisplayWidth(str);
     let leftMargin = this.props.width - strWidth;
     return str + " ".repeat(leftMargin);
   }
@@ -494,7 +552,7 @@ export function leftAlign(width: number, ...contents: ContentsArgs): LeftAlign {
 export class MiddleAlign extends Align {
   render() {
     let str = combiner(...this.props.contents).render();
-    let strWidth = this.con.getStrDisplayWidth(str);
+    let strWidth = this.con.tty.getStrDisplayWidth(str);
     let leftMargin = Math.floor((this.props.width - strWidth) / 2);
     let rightMargin = this.props.width - strWidth - leftMargin;
     return " ".repeat(leftMargin) + str + " ".repeat(rightMargin);
@@ -516,7 +574,7 @@ export function middleAlign(
 export class RightAlign extends Align {
   render() {
     let str = combiner(...this.props.contents).render();
-    let strWidth = this.con.getStrDisplayWidth(str);
+    let strWidth = this.con.tty.getStrDisplayWidth(str);
     let rightMargin = this.props.width - strWidth;
     return " ".repeat(rightMargin) + str;
   }
@@ -564,21 +622,20 @@ export function chalkjs(
 
 ///// Switcher /////////////////////////////////////////////
 // TODO
-class SwitcherFakeCon implements IOCon {
-  constructor(con: IOCon) {
+class SwitcherFakeCon implements ConForBlock {
+  constructor(con: ConForBlock) {
     this.con = con;
     this.stack = _.clone(con.stack);
-    this.y = con.lineNum;
+    this.startY = con.lineNum;
+    this.tty = this.con.tty;
   }
-  con: IOCon;
+  con: ConForBlock;
   stack: ContainerStack;
-  y:number;
-  lines:Line[]=[];
-  get lineNum(): number {
-    return this.lines.length;
-  }
-  log(...objs: ContentsArgs): Line {
-    return this.con.log(...objs);
+  startY: number;
+  lines: Line[] = [];
+  tty: UTty;
+  get lineNum() {
+    return this.startY + this.lines.length;
   }
   redraw(line: Line): void {
     this.con.redraw(this.lines[line.y]);
@@ -588,13 +645,15 @@ class SwitcherFakeCon implements IOCon {
     for (let i = this.lines.length - 1; i > y; i--) {
       this.lines[i] = this.lines[i - 1];
       this.lines[i].y++;
-      this.redraw(this.lines[i]);
     }
+    this.tty.moveY(-1);
+    this.tty.clearLine(0);
+    this.tty.moveToLastLine();
     this.lines[y] = line;
     line.y = y;
-    this.redraw(this.lines[y]);
+    this.con.insertLine(this.startY + y, line);
   }
-  deleteLine(line: Line): void {
+  deleteLine(line: Line = this.lines[this.lines.length - 1]): void {
     if (this.lines[line.y] !== line) {
       throw new Error("This line has already been detached!");
     }
@@ -603,16 +662,25 @@ class SwitcherFakeCon implements IOCon {
       this.lines[i - 1].y--;
       this.redraw(this.lines[i - 1]);
     }
-    this.lines.pop();
-    this.tty.moveY(-1);
-    this.tty.clearLine(0);
+    this.con.deleteLine(this.startY + line.y);
   }
-  getStrDisplayWidth(str: string): number {
-    return this.con.getStrDisplayWidth(str);
+  addLine(content: InlineComponent): Line {
+    const currentLine = createLine(this.stack, content);
+    currentLine.y = this.lineNum;
+    this.lines.push(currentLine);
+    this.con.insertLine(this.startY + this.lineNum, currentLine);
+    return currentLine;
   }
-
 }
-type BlockComponentConstructor<C extends BlockComponent<P>, P> = new (porps: P, con?: IOCon) => C;
+
+/**
+ * #####
+ * 12.12记录：FakeCon应总是提供FakeLine。
+ * #####
+ */
+
+
+type BlockComponentConstructor<C extends BlockComponent<P>, P> = new (porps: P, con?: ConForBlock) => C;
 export interface SwitcherProps<
   C1 extends BlockComponent<P1>, P1,
   C2 extends BlockComponent<P2>, P2> {
@@ -631,7 +699,7 @@ export class Switcher<
   C2 extends BlockComponent<P2>, P2
   > extends BlockComponent<SwitcherProps<C1, P1, C2, P2>>{
   stack: ContainerStack = [];
-  fakeCon: IOCon | undefined = undefined;
+  fakeCon: ConForBlock | undefined = undefined;
   state: SwitcherState = 0;
   comp1: C1 | undefined = undefined;
   comp2: C2 | undefined = undefined;
@@ -863,7 +931,7 @@ export interface GroupBoxProps {
 }
 export class GroupBox extends ContainerComponent<GroupBoxProps>{
   begin(...title: ContentsArgs) {
-    this.con.log("\u256D\u2574", chalkjs(chalk.bold, ...title));
+    this.con.addLine(combiner("\u256D\u2574", chalkjs(chalk.bold, ...title)));
     this.register();
   }
   getMidware() {
@@ -873,14 +941,14 @@ export class GroupBox extends ContainerComponent<GroupBoxProps>{
   }
   end() {
     this.unregister();
-    this.con.log("\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500");
+    this.con.addLine(inlStr("\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"));
   }
   /**
    * Show a section.
    */
   sect(...contents: ContentsArgs): void {
     this.unregister();
-    this.con.log("\u251C\u2574", ...contents);
+    this.con.addLine(combiner("\u251C\u2574", ...contents));
     this.register();
   }
   /**
@@ -888,7 +956,7 @@ export class GroupBox extends ContainerComponent<GroupBoxProps>{
    */
   step(...contents: ContentsArgs): void {
     this.unregister();
-    this.con.log("\u2502\u2576 ", ...contents);
+    this.con.addLine(combiner("\u2502\u2576 ", ...contents));
     this.register();
   }
 }
