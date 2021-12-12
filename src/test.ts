@@ -21,7 +21,7 @@ let writeProgress = new Switcher<ProgressBar, ProgressBarProps, Text, TextProp>(
 writeProgress.mount(1);
 group.log("xxx");
 const timer = setInterval(() => {
-  if (writeProgress.comp1.progress(0.1) >= 1) {
+  if (writeProgress.comp1!.progress(0.1) >= 1) {
     clearInterval(timer);
     writeProgress.switch(2);
     group.step("Responsed in ", chalkjs(chalk.yellow, "3ms"));
