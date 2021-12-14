@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { ucon, ProgressBar, MidwareContext,Table, GroupBox, chalkjs, combiner, symbolIcon, Switcher, ProgressBarProps, Text, TextProp, ContainerComponent, Midware, RefMidware, Line } from "./index";
+import { ucon, ProgressBar, MidwareContext, Table, GroupBox, chalkjs, combiner, symbolIcon, Switcher, ProgressBarProps, Text, TextProp, ContainerComponent, Midware, RefMidware, Line } from "./index";
 
 let group = new GroupBox({});
 
@@ -15,41 +15,71 @@ class LineID extends ContainerComponent<null>{
   }
   getMidware() {
     return function (ctx: MidwareContext) {
-      return "["+ctx.line.y+"]" + ctx.next();
+      return "[" + ctx.line.y + "]" + ctx.next();
     }
   }
 }
 
 let id = new LineID(null);
-id.begin();
+//id.begin();
 
 group.begin("Process Request ", chalkjs(chalk.blueBright, "#3"));
 group.sect("Parse>");
 group.log("METHOD: ", chalkjs(chalk.green, "GET"));
 group.log("PATH:   \"", chalkjs(chalk.yellow, "/home/index.html"), "\"");
 group.sect("Response>");
-let writeProgress = new Switcher<ProgressBar, ProgressBarProps, Text, TextProp>({
-  ctor1: ProgressBar,
-  prop1: {
-    name: "Write Response",
-    width: 30,
-    fractionDigits: 1
-  },
-  ctor2: Text,
-  prop2: symbolIcon("tick").render() + "Response writing completed."
-});
-writeProgress.mount(1);
-group.log("xxx");
-const timer = setInterval(() => {
-  if (writeProgress.comp1!.progress(0.1) >= 1) {
-    clearInterval(timer);
-    writeProgress.switch(2);
+const fn = () => {
+  let writeProgress = new Switcher<ProgressBar, ProgressBarProps, Text, TextProp>({
+    ctor1: ProgressBar,
+    prop1: {
+      name: "Write Response",
+      width: 30,
+      fractionDigits: 1
+    },
+    ctor2: Text,
+    prop2: symbolIcon("tick").render() + "Response writing completed."
+  });
+  writeProgress.mount(1);
+  let updateProgress = new Switcher<ProgressBar, ProgressBarProps, Text, TextProp>({
+    ctor1: ProgressBar,
+    prop1: {
+      name: "Update database",
+      width: 30,
+      fractionDigits: 1
+    },
+    ctor2: Text,
+    prop2: symbolIcon("tick").render() + "Database updated."
+  });
+  updateProgress.mount(1);
+  const timer = setInterval(() => {
+    if (writeProgress.comp1!.progress(0.1) >= 1) {
+      clearInterval(timer);
+      writeProgress.switch(2);
+      finisher();
+    }
+  }, 100);
+  const timer2 = setInterval(() => {
+    if (updateProgress.comp1!.progress(0.1) >= 1) {
+      clearInterval(timer2);
+      updateProgress.switch(2);
+      finisher();
+    }
+  }, 60);
+};
+const finisher = () => {
+  finished++;
+  if (finished >= 10) {
     group.step("Responsed in ", chalkjs(chalk.yellow, "3ms"));
     group.end();
-    id.end();
+    //id.end();
   }
-}, 100);
-
+};
+let finished = 0;
+fn();
+fn();
+fn();
+fn();
+fn();
 // interface Process{
 //   Id:number,
 //   ProcessName:string
