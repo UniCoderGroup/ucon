@@ -46,10 +46,9 @@ const timer = setInterval(() => {
     writeProgress.switch(2);
     group.step("Responsed in ", chalkjs(chalk.yellow, "3ms"));
     group.end();
+    id.end();
   }
-}, 1000);
-
-id.end();
+}, 100);
 
 // interface Process{
 //   Id:number,

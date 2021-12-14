@@ -1,7 +1,6 @@
 import UTty from "./utty"
 import chalk from "chalk";
-import _, { create } from "lodash";
-import { runInThisContext } from "node:vm";
+import _ from "lodash";
 
 type ContainerStack = ContainerComponent[];
 
@@ -70,7 +69,7 @@ export class UCon implements ConForBlock, ConForContainer, ConForInline {
     this.tty.redraw(line.y, line.render());
   }
 
-  b=0;
+  b = 0;
   /**
    * Insert a line.
    */
@@ -151,7 +150,7 @@ export const ucon = new UCon();
 
 export interface MidwareContext {
   next: () => string;
-  line:Line;
+  line: Line;
 }
 
 export type Midware = (ctx: MidwareContext) => string;
@@ -161,10 +160,19 @@ export interface RefMidware {
   midware: number;
 }
 
+export interface Line {
+  get y(): number;
+  set y(y: number);
+  get content(): InlineComponent;
+  set content(content: InlineComponent);
+  get midwares(): Midware[];
+  render<AC extends Object>(additionalContext?: AC): string;
+}
+
 /**
  * Line.
  */
-export class Line {
+export class ConLine implements Line {
   constructor(y: number, content: InlineComponent) {
     this.y = y;
     this.content = content;
@@ -212,7 +220,7 @@ export class Line {
     };
     return this.midwares[0]({
       next: createNext(0),
-      line:this,
+      line: this,
       ...(additionalContext === null ? {} : additionalContext)
     });
   }
@@ -222,7 +230,7 @@ export class Line {
  * Create line.
  */
 function createLine(stack: ContainerStack, content: InlineComponent): Line {
-  const line = new Line(-1, content);
+  const line = new ConLine(-1, content);
   for (const compo of stack) {
     line.midwares.push(
       compo.newLine({
@@ -328,6 +336,8 @@ export abstract class BlockComponent<P = unknown> extends Component<P, ConForBlo
    */
   abstract render(): string[];
 }
+
+type BlockComponentConstructor<C extends BlockComponent<P>, P> = new (porps: P, con?: ConForBlock) => C;
 
 /**
  * Container Component:
@@ -624,14 +634,34 @@ export function chalkjs(
 ////////////////////////////////////////////////////////////
 
 ///// Switcher /////////////////////////////////////////////
+class SwitcherFakeLine implements Line {
+  constructor(realLine: Line) {
+    this.realLine = realLine;
+  }
+  realLine: Line;
+  y = -1;
+  get content(): InlineComponent {
+    return this.realLine.content;
+  }
+  set content(content: InlineComponent) {
+    this.realLine.content = content;
+  }
+  get midwares(): Midware[] {
+    return this.realLine.midwares;
+  }
+  render<AC extends Object>(additionalContext?: AC): string {
+    return this.realLine.render(additionalContext);
+  }
+}
 interface SwitcherLine {
   real: Line;
-  fake: Line;
+  fake: SwitcherFakeLine;
 }
 function createSwitcherLine(stack: ContainerStack, content: InlineComponent): SwitcherLine {
+  let real = createLine(stack, content);
   return {
-    real: createLine(stack, content),
-    fake: createLine(stack, content)
+    real: real,
+    fake: new SwitcherFakeLine(real)
   };
 }
 class SwitcherFakeCon implements ConForBlock {
@@ -662,10 +692,7 @@ class SwitcherFakeCon implements ConForBlock {
     this.lines[y].real.y = y;
     this.con.insertLine(this.startY + y, this.lines[y].fake);
   }
-  t = 0;
   deleteLine(line: Line): void {
-    this.t++;
-    console.log("-----------------------------", this.t, line.y);
     if (this.lines[line.y].real !== line) {
       throw new Error("This line has already been detached!");
     }
@@ -684,8 +711,6 @@ class SwitcherFakeCon implements ConForBlock {
     return currentLine.real;
   }
 }
-
-type BlockComponentConstructor<C extends BlockComponent<P>, P> = new (porps: P, con?: ConForBlock) => C;
 export interface SwitcherProps<
   C1 extends BlockComponent<P1>, P1,
   C2 extends BlockComponent<P2>, P2> {
