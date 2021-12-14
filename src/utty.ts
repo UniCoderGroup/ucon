@@ -40,7 +40,10 @@ export default class UTty {
     /**
      * Redraw the line.
      */
-    redraw(line: number, str: string): void {
+    redraw(line: number, str: string, addYMax: boolean = true): void {
+        if (line >= this.yMax && addYMax) {
+            this.yMax = line+1;
+        }
         this.moveToLine(line);
         this.clearLine(0);
         this.output(str, false, line);

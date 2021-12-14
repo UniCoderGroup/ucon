@@ -1,7 +1,27 @@
 import chalk from "chalk";
-import { ucon, ProgressBar, Table, GroupBox, chalkjs, combiner, symbolIcon, Switcher, ProgressBarProps, Text, TextProp } from "./index";
+import { ucon, ProgressBar, MidwareContext,Table, GroupBox, chalkjs, combiner, symbolIcon, Switcher, ProgressBarProps, Text, TextProp, ContainerComponent, Midware, RefMidware, Line } from "./index";
 
 let group = new GroupBox({});
+
+class LineID extends ContainerComponent<null>{
+  begin() {
+    this.register();
+  }
+  end() {
+    this.unregister();
+  }
+  newLine(ref: RefMidware): Midware {
+    return this.getMidware();
+  }
+  getMidware() {
+    return function (ctx: MidwareContext) {
+      return "["+ctx.line.y+"]" + ctx.next();
+    }
+  }
+}
+
+let id = new LineID(null);
+id.begin();
 
 group.begin("Process Request ", chalkjs(chalk.blueBright, "#3"));
 group.sect("Parse>");
@@ -27,7 +47,9 @@ const timer = setInterval(() => {
     group.step("Responsed in ", chalkjs(chalk.yellow, "3ms"));
     group.end();
   }
-}, 100);
+}, 1000);
+
+id.end();
 
 // interface Process{
 //   Id:number,

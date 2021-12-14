@@ -1,6 +1,6 @@
 import UTty from "./utty"
 import chalk from "chalk";
-import _ from "lodash";
+import _, { create } from "lodash";
 import { runInThisContext } from "node:vm";
 
 type ContainerStack = ContainerComponent[];
@@ -70,28 +70,26 @@ export class UCon implements ConForBlock, ConForContainer, ConForInline {
     this.tty.redraw(line.y, line.render());
   }
 
+  b=0;
   /**
    * Insert a line.
    */
   insertLine(y: number, line: Line): void {
+    line.y = y;
     this.lines.push(this.lines[this.lines.length - 1]);
     for (let i = this.lines.length - 1; i > y; i--) {
       this.lines[i] = this.lines[i - 1];
       this.lines[i].y++;
       this.redraw(this.lines[i]);
     }
-    this.tty.moveY(-1);
-    this.tty.clearLine(0);
-    this.tty.moveToLastLine();
     this.lines[y] = line;
-    line.y = y;
     this.redraw(line);
   }
 
   /**
    * Delete a line.
    */
-  deleteLine(line: Line = this.lines[this.lines.length - 1]): void {
+  deleteLine(line: Line): void {
     if (this.lines[line.y] !== line) {
       throw new Error("This line has already been detached!");
     }
@@ -110,7 +108,7 @@ export class UCon implements ConForBlock, ConForContainer, ConForInline {
    */
   addLine(content: InlineComponent): Line {
     const currentLine = createLine(this.stack, content);
-    currentLine.y = this.tty.y;
+    currentLine.y = this.lineNum;
     this.lines.push(currentLine);
     this.tty.output(currentLine.render());
     return currentLine;
@@ -153,6 +151,7 @@ export const ucon = new UCon();
 
 export interface MidwareContext {
   next: () => string;
+  line:Line;
 }
 
 export type Midware = (ctx: MidwareContext) => string;
@@ -190,7 +189,7 @@ export class Line {
    * Render this line.
    * @returns result text
    */
-  render(): string {
+  render<AC extends Object>(additionalContext?: AC): string {
     /**
      * Create the `next` in the context of `n`th midware
      * @param n index of midware
@@ -211,7 +210,11 @@ export class Line {
         };
       }
     };
-    return this.midwares[0]({ next: createNext(0) });
+    return this.midwares[0]({
+      next: createNext(0),
+      line:this,
+      ...(additionalContext === null ? {} : additionalContext)
+    });
   }
 }
 
@@ -374,7 +377,7 @@ export abstract class ContainerComponent<P = unknown> extends Component<P, ConFo
   /**
    * @returns The midware.
    */
-  abstract getMidware(): Midware;
+  abstract getMidware(...args: any): Midware;
 
   log = this.con.log.bind(this.con);
 }
@@ -621,7 +624,16 @@ export function chalkjs(
 ////////////////////////////////////////////////////////////
 
 ///// Switcher /////////////////////////////////////////////
-// TODO
+interface SwitcherLine {
+  real: Line;
+  fake: Line;
+}
+function createSwitcherLine(stack: ContainerStack, content: InlineComponent): SwitcherLine {
+  return {
+    real: createLine(stack, content),
+    fake: createLine(stack, content)
+  };
+}
 class SwitcherFakeCon implements ConForBlock {
   constructor(con: ConForBlock) {
     this.con = con;
@@ -632,53 +644,46 @@ class SwitcherFakeCon implements ConForBlock {
   con: ConForBlock;
   stack: ContainerStack;
   startY: number;
-  lines: Line[] = [];
+  lines: SwitcherLine[] = [];
   tty: UTty;
   get lineNum() {
-    return this.startY + this.lines.length;
+    return this.lines.length;
   }
   redraw(line: Line): void {
-    this.con.redraw(this.lines[line.y]);
+    this.con.redraw(this.lines[line.y].fake);
   }
   insertLine(y: number, line: Line): void {
     this.lines.push(this.lines[this.lines.length - 1]);
     for (let i = this.lines.length - 1; i > y; i--) {
       this.lines[i] = this.lines[i - 1];
-      this.lines[i].y++;
+      this.lines[i].real.y++;
     }
-    this.tty.moveY(-1);
-    this.tty.clearLine(0);
-    this.tty.moveToLastLine();
-    this.lines[y] = line;
-    line.y = y;
-    this.con.insertLine(this.startY + y, line);
+    this.lines[y] = createSwitcherLine(this.stack, line.content);;
+    this.lines[y].real.y = y;
+    this.con.insertLine(this.startY + y, this.lines[y].fake);
   }
-  deleteLine(line: Line = this.lines[this.lines.length - 1]): void {
-    if (this.lines[line.y] !== line) {
+  t = 0;
+  deleteLine(line: Line): void {
+    this.t++;
+    console.log("-----------------------------", this.t, line.y);
+    if (this.lines[line.y].real !== line) {
       throw new Error("This line has already been detached!");
     }
     for (let i = line.y + 1; i < this.lines.length; i++) {
       this.lines[i - 1] = this.lines[i];
-      this.lines[i - 1].y--;
-      this.redraw(this.lines[i - 1]);
+      this.lines[i - 1].real.y--;
     }
-    this.con.deleteLine(this.startY + line.y);
+    this.con.deleteLine(this.lines[line.y].fake);
+    this.lines.pop();
   }
   addLine(content: InlineComponent): Line {
-    const currentLine = createLine(this.stack, content);
-    currentLine.y = this.lineNum;
+    const currentLine = createSwitcherLine(this.stack, content);
+    currentLine.real.y = this.lineNum;
+    this.con.insertLine(this.startY + this.lineNum, currentLine.fake);
     this.lines.push(currentLine);
-    this.con.insertLine(this.startY + this.lineNum, currentLine);
-    return currentLine;
+    return currentLine.real;
   }
 }
-
-/**
- * #####
- * 12.12记录：FakeCon应总是提供FakeLine。
- * #####
- */
-
 
 type BlockComponentConstructor<C extends BlockComponent<P>, P> = new (porps: P, con?: ConForBlock) => C;
 export interface SwitcherProps<
@@ -698,7 +703,6 @@ export class Switcher<
   C1 extends BlockComponent<P1>, P1,
   C2 extends BlockComponent<P2>, P2
   > extends BlockComponent<SwitcherProps<C1, P1, C2, P2>>{
-  stack: ContainerStack = [];
   fakeCon: ConForBlock | undefined = undefined;
   state: SwitcherState = 0;
   comp1: C1 | undefined = undefined;
@@ -709,11 +713,6 @@ export class Switcher<
     this.comp1 = new this.props.ctor1(this.props.prop1, this.fakeCon);
     this.comp2 = new this.props.ctor2(this.props.prop2, this.fakeCon);
     this.switch(state);
-    this.stack = _.clone(this.con.stack);
-    if (this.state !== 0) {
-      this.getComp(this.state)!.mount();
-      this.lines = this.getComp(this.state)!.lines;
-    }
   }
   unmount() {
     if (!this.mounted) throw new Error("Cannot unmount unmounted component!");
