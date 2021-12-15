@@ -805,7 +805,7 @@ export class Switcher<
 ////////////////////////////////////////////////////////////
 
 ///// Text /////////////////////////////////////////////////
-export type TextProp = string;
+export type TextProp = ContentsArgs;
 /**
  * Text: A standard BlockComponent.
  * Shows lines of text in the screen.
@@ -813,7 +813,7 @@ export type TextProp = string;
 export class Text extends BlockComponent<TextProp>{
   render() {
     let result = [""]
-    for (let c of this.props) {
+    for (let c of combiner(...this.props).render()) {
       if (c === "\n") {
         result.push("");
       } else {
@@ -972,7 +972,7 @@ export class GroupBox extends ContainerComponent<GroupBoxProps>{
    */
   sect(...contents: ContentsArgs): void {
     this.unregister();
-    this.con.addLine(combiner("\u251C\u2574", ...contents));
+    this.con.addLine(combiner("\u251C\u2574", ...contents,">"));
     this.register();
   }
   /**

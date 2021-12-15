@@ -47,7 +47,6 @@ export default class UTty {
         this.moveToLine(line);
         this.clearLine(0);
         this.output(str, false, line);
-        this.moveToLastLine();
     }
 
     /**
