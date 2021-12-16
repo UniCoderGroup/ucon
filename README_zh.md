@@ -1,6 +1,6 @@
 # UCON framework
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/unicodergroup/ucon/Update%20to%20Gitee?label=Update%20to%20Gitee)](https://gitee.com/UniCoderGroup/ucon/) ![GitHub last commit](https://img.shields.io/github/last-commit/unicodergroup/ucon) ![GitHub](https://img.shields.io/github/license/unicodergroup/ucon) [![Translated](https://img.shields.io/badge/Translated%20to-English-brightgreen)](README.md)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/unicodergroup/ucon/Update%20to%20Gitee?label=Update%20to%20Gitee)](https://gitee.com/UniCoderGroup/ucon/) ![GitHub last commit](https://img.shields.io/github/last-commit/unicodergroup/ucon) ![GitHub](https://img.shields.io/github/license/unicodergroup/ucon) [![Translated](https://img.shields.io/badge/Translated%20to-English-brightgreen)](README.md) [![Join the chat at https://gitter.im/ucon-project/community](https://badges.gitter.im/ucon-project/community.svg)](https://gitter.im/ucon-project/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## 简介
 
