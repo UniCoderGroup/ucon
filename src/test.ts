@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { ProgressBar, GroupBox, chalkjs, symbolIcon, Switcher, ProgressBarProps, Text, TextProp } from "./index";
+import { ProgressBar, GroupBox, chalkjs, symbolIcon, Switcher, ProgressBarProps, Text, TextProp, ucon } from "./index";
 
 let timeBegin = process.uptime();
 let group = new GroupBox({});
@@ -34,6 +34,7 @@ let finished = 0;
 const finisher = () => {
   finished++;
   if (finished >= n) {
+    ucon.deleteLine(waitText);
     group.step("Responsed in ", chalkjs(chalk.yellow, `${((process.uptime() - timeBegin) * 1000).toFixed(0)}ms`));
     group.end();
     //id.end();
@@ -42,7 +43,7 @@ const finisher = () => {
 for (let i = 0; i < n; i++) {
   fn(i);
 }
-group.log("...waiting...");
+let waitText = group.log(chalkjs(chalk.green,"...waiting..."));
 
 // interface Process{
 //   Id:number,

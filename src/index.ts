@@ -92,13 +92,14 @@ export class UCon implements ConForBlock, ConForContainer, ConForInline {
     if (this.lines[line.y] !== line) {
       throw new Error("This line has already been detached!");
     }
-    for (let i = line.y + 1; i < this.lines.length; i++) {
+    for (let i = line.y + 1; i < this.lineNum; i++) {
       this.lines[i - 1] = this.lines[i];
       this.lines[i - 1].y--;
       this.redraw(this.lines[i - 1]);
     }
     this.lines.pop();
-    this.tty.moveY(-1);
+    this.tty.moveToLine(this.lineNum);
+    this.tty.yMax--;
     this.tty.clearLine(0);
   }
 
@@ -389,7 +390,9 @@ export abstract class ContainerComponent<P = unknown> extends Component<P, ConFo
    */
   abstract getMidware(...args: any): Midware;
 
-  log = this.con.log.bind(this.con);
+  log(...objs: ContentsArgs): Line {
+    return this.con.log(...objs);
+  }
 }
 
 /**
@@ -972,7 +975,7 @@ export class GroupBox extends ContainerComponent<GroupBoxProps>{
    */
   sect(...contents: ContentsArgs): void {
     this.unregister();
-    this.con.addLine(combiner("\u251C\u2574", ...contents,">"));
+    this.con.addLine(combiner("\u251C\u2574", ...contents, ">"));
     this.register();
   }
   /**

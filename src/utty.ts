@@ -45,7 +45,7 @@ export default class UTty {
             this.yMax = line+1;
         }
         this.moveToLine(line);
-        this.clearLine(0);
+        this.clearLine();
         this.output(str, false, line);
     }
 
@@ -73,6 +73,7 @@ export default class UTty {
     moveToLine(line: number): void {
         this.resetX();
         this.moveY(-(this.y - line));
+        if(this.y!==line)throw new Error("//");
     }
 
     /**
