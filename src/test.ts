@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { ProgressBar, GroupBox, chalkjs, symbolIcon, Switcher, ProgressBarProps, Text, TextProp, ucon } from "./index";
+import { chalkjs, GroupBox, ProgressBar, ProgressBarProps, Switcher, symbolIcon, Text, TextProp, ucon } from "./index";
 
 let timeBegin = process.uptime();
 let group = new GroupBox({});
@@ -9,7 +9,7 @@ group.log("METHOD: ", chalkjs(chalk.green, "GET"));
 group.log("PATH:   \"", chalkjs(chalk.yellow, "/packages/a-big-package.html"), "\"");
 group.sect("Response");
 let n = 10;
-const fn = (id: number) => {
+const fn = (id: number) => {  
   let name = "Package " + chalkjs(chalk.yellow, id.toString()).render();
   let progress = new Switcher<ProgressBar, ProgressBarProps, Text, TextProp>({
     ctor1: ProgressBar,
@@ -43,7 +43,7 @@ const finisher = () => {
 for (let i = 0; i < n; i++) {
   fn(i);
 }
-let waitText = group.log(chalkjs(chalk.green,"...waiting..."));
+let waitText = group.log(chalkjs(chalk.green, "...waiting..."));
 
 // interface Process{
 //   Id:number,
