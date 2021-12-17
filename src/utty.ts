@@ -1,4 +1,5 @@
 import { WriteStream as TtyWriteStream } from 'node:tty';
+import stripAnsi from 'strip-ansi';
 
 export default class UTty {
     constructor(tty: TtyWriteStream & { fd: 1 }) {
@@ -100,6 +101,6 @@ export default class UTty {
      * @returns The display length of str.
      */
     getStrDisplayWidth(str: string): number {
-        return str.length;
+        return stripAnsi(str).length;
     }
 }
