@@ -6,7 +6,6 @@
   "types": "build/index.d.ts",
   "scripts": {
     "test": "node-dev --respawn --deps=-1 --clear src/test.ts",
-    "test_utty": "node-dev --respawn --deps=-1 --clear src/test_utty.ts",
     "build": "tsc"
   },
   "repository": {
@@ -26,13 +25,12 @@
   "devDependencies": {
     "@types/node": "^16.11.9",
     "node-dev": "^7.1.0",
+    "ts-node": "^10.4.0",
     "typescript": "^4.5.2"
   },
   "dependencies": {
     "@types/lodash": "^4.14.177",
     "chalk": "^4.1.2",
-    "lodash": "^4.17.21",
-    "strip-ansi": "^7.0.1",
-    "ts-node": "^10.4.0"
+    "lodash": "^4.17.21"
   }
 }

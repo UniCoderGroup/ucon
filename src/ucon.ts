@@ -1,5 +1,5 @@
 import {ContainerComponent,InlineComponent} from "./components";
-import UTty from "./utty";
+import UTty from "utty";
 import {Line,createLine,Midware,RefMidware} from "./line";
 import { combiner } from "./std_components/inline";
 import { ContentsArgs } from "./global";
