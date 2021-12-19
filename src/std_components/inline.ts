@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { InlineComponent } from "../components";
+import { InlineComponent } from "../component";
 import { BlankContents, ContentsArgs, ContentsProps } from "../global";
 
 ///// InlStr ///////////////////////////////////////////////
