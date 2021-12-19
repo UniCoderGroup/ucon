@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { ContainerComponent } from "../components";
+import { ContainerComponent } from "../component";
 import { ContentsArgs } from "../global";
 import { MidwareContext } from "../line";
 import { chalkjs, combiner, inlStr } from "./inline";
