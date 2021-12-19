@@ -4,6 +4,7 @@
   "description": "A super framework for nodejs console.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "type": "module",
   "scripts": {
     "test": "node-dev --respawn --deps=-1 --clear src/test.ts",
     "build": "tsc"

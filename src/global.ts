@@ -1,4 +1,4 @@
-import { InlineComponent } from "./components";
+import { InlineComponent } from "./component";
 
 /**
  * This type receive InlineComponents or strings as contents of an InlineComponent.

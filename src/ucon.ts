@@ -1,6 +1,6 @@
-import {ContainerComponent,InlineComponent} from "./component";
+import { ContainerComponent, InlineComponent } from "./component";
 import UTty from "utty";
-import {Line,createLine,Midware,RefMidware} from "./line";
+import { Line, createLine, Midware, RefMidware } from "./line";
 import { combiner } from "./std_components/inline";
 import { ContentsArgs } from "./global";
 
@@ -58,7 +58,7 @@ export class UCon implements ConForBlock, ConForContainer, ConForInline {
    * @param line Line to redraw
    */
   redraw(line: Line): void {
-    this.tty.redraw(line.y, line.render());
+    this.tty.replace(line.y, line.render());
   }
 
   b = 0;
@@ -91,7 +91,7 @@ export class UCon implements ConForBlock, ConForContainer, ConForInline {
     }
     this.lines.pop();
     this.tty.moveToLine(this.lineNum);
-    this.tty.yMax--;
+    this.tty.nLine--;
     this.tty.clearLine(0);
   }
 
@@ -102,7 +102,7 @@ export class UCon implements ConForBlock, ConForContainer, ConForInline {
     const currentLine = createLine(this.stack, content);
     currentLine.y = this.lineNum;
     this.lines.push(currentLine);
-    this.tty.output(currentLine.render());
+    this.tty.replace(currentLine.y, currentLine.render());
     return currentLine;
   }
 
