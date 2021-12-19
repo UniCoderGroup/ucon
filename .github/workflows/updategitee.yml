@@ -2,7 +2,6 @@ name: Update to Gitee
 
 on:
   push:
-  pull_request:
   workflow_dispatch:
 
 jobs:
