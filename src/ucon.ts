@@ -1,4 +1,4 @@
-import {ContainerComponent,InlineComponent} from "./components";
+import {ContainerComponent,InlineComponent} from "./component";
 import UTty from "utty";
 import {Line,createLine,Midware,RefMidware} from "./line";
 import { combiner } from "./std_components/inline";
