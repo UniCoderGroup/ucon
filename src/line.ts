@@ -1,4 +1,4 @@
-import { InlineComponent } from "./components";
+import { InlineComponent } from "./component";
 import { ContainerStack } from "./ucon";
 
 export interface MidwareContext {
