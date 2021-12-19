@@ -1,5 +1,5 @@
 import { ConForBlock, ContainerStack } from "../ucon";
-import { BlockComponent, BlockComponentConstructor, InlineComponent } from "../components";
+import { BlockComponent, BlockComponentConstructor, InlineComponent } from "../component";
 import { createLine, Line, Midware } from "../line";
 import UTty from "../utty";
 import { align, AlignDirection, chalkjs, combiner, rightAlign } from "./inline";
