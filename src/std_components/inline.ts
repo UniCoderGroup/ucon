@@ -19,7 +19,7 @@ export function inlStr(str: string): InlStr {
 ////////////////////////////////////////////////////////////
 
 ///// Combiner /////////////////////////////////////////////
-export interface CombinerProps extends ContentsProps { }
+export type CombinerProps = ContentsProps
 export class Combiner extends InlineComponent<CombinerProps> {
     render() {
         let result = "";
