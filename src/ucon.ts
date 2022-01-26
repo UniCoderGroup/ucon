@@ -23,9 +23,7 @@ export interface ConForContainer extends ConWithUTty {
   addLine(content: InlineComponent): Line;
   log(...objs: ContentsArgs): Line;
 }
-export interface ConForInline extends ConWithUTty {
-
-}
+export type ConForInline = ConWithUTty
 
 /**
  * Main.

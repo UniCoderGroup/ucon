@@ -9,7 +9,7 @@ group.log("METHOD: ", chalkjs(chalk.green, "GET"));
 group.log("PATH:   \"", chalkjs(chalk.yellow, "/packages/a-big-package.html"), "\"");
 group.sect("Response");
 let n = 10;
-const fn = (id: number) => {  
+const fn = (id: number) => {
   let name = "Package " + chalkjs(chalk.yellow, id.toString()).render();
   let progress = new Switcher<ProgressBar, ProgressBarProps, Text, TextProp>({
     ctor1: ProgressBar,
