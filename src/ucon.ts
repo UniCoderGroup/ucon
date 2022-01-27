@@ -19,23 +19,26 @@ export interface ConForBlock extends ConWithUTty {
 }
 export interface ConForContainer extends ConWithUTty {
   registerContainer(container: ContainerComponent): void;
-  unregisterContainer(container: ContainerComponent): void
+  unregisterContainer(container: ContainerComponent): void;
   addLine(content: InlineComponent): Line;
   log(...objs: ContentsArgs): Line;
 }
-export type ConForInline = ConWithUTty
+export type ConForInline = ConWithUTty;
 
 /**
  * Main.
  */
-export class UCon implements ConForBlock, ConForContainer, ConForInline {
-  constructor() {
+export default class UCon
+  implements ConForBlock, ConForContainer, ConForInline
+{
+  constructor(tty: UTty) {
+    this.tty = tty;
   }
 
   /**
    * An instance of UTty.
    */
-  tty = new UTty(process.stdout);
+  tty: UTty;
 
   /**
    * Lines. Each Line may have more than one real line.
@@ -88,9 +91,7 @@ export class UCon implements ConForBlock, ConForContainer, ConForInline {
       this.redraw(this.lines[i - 1]);
     }
     this.lines.pop();
-    this.tty.moveToLine(this.lineNum);
-    this.tty.nLine--;
-    this.tty.clearLine(0);
+    this.tty.popLine();
   }
 
   /**

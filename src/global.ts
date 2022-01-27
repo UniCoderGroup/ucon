@@ -9,12 +9,12 @@ export type ContentsArgs = (InlineComponent | string)[];
  * This interface will be extended by an InlineComponent which receives contents.
  */
 export interface ContentsProps {
-    contents: ContentsArgs;
+  contents: ContentsArgs;
 }
 
 /**
  * This is the Blank value of ContentsProps.
  */
 export const BlankContents: ContentsProps = {
-    contents: [],
+  contents: [],
 };

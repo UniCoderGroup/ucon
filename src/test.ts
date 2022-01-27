@@ -1,12 +1,26 @@
 import chalk from "chalk";
-import { chalkjs, GroupBox, ProgressBar, ProgressBarProps, Switcher, symbolIcon, Text, TextProp, ucon } from "./index";
+import {
+  chalkjs,
+  GroupBox,
+  ProgressBar,
+  ProgressBarProps,
+  Switcher,
+  symbolIcon,
+  Text,
+  TextProp,
+  ucon,
+} from "./index";
 
 let timeBegin = process.uptime();
 let group = new GroupBox({});
 group.begin("Process Request ", chalkjs(chalk.blueBright, "#3"));
 group.sect("Parse");
 group.log("METHOD: ", chalkjs(chalk.green, "GET"));
-group.log("PATH:   \"", chalkjs(chalk.yellow, "/packages/a-big-package.html"), "\"");
+group.log(
+  'PATH:   "',
+  chalkjs(chalk.yellow, "/packages/a-big-package.html"),
+  '"'
+);
 group.sect("Response");
 let n = 10;
 const fn = (id: number) => {
@@ -16,10 +30,10 @@ const fn = (id: number) => {
     prop1: {
       name: name + ": Uploading",
       width: 30,
-      fractionDigits: 1
+      fractionDigits: 1,
     },
     ctor2: Text,
-    prop2: [name, ": ", symbolIcon("tick"), " Uploaded."]
+    prop2: [name, ": ", symbolIcon("tick"), " Uploaded."],
   });
   progress.mount(1);
   const timer = setInterval(() => {
@@ -35,7 +49,13 @@ const finisher = () => {
   finished++;
   if (finished >= n) {
     ucon.deleteLine(waitText);
-    group.step("Responsed in ", chalkjs(chalk.yellow, `${((process.uptime() - timeBegin) * 1000).toFixed(0)}ms`));
+    group.step(
+      "Responsed in ",
+      chalkjs(
+        chalk.yellow,
+        `${((process.uptime() - timeBegin) * 1000).toFixed(0)}ms`
+      )
+    );
     group.end();
     //id.end();
   }
@@ -74,7 +94,7 @@ let waitText = group.log(chalkjs(chalk.green, "...waiting..."));
 //   },
 //   {
 //     Id:21172,
-//     ProcessName:"audiodg"    
+//     ProcessName:"audiodg"
 //   }
 // ]
 // table.mount();
