@@ -5,6 +5,7 @@ import { MidwareContext } from "../line";
 import { chalkjs, combiner, inlStr } from "./inline";
 
 ///// GroupBox /////////////////////////////////////////////
+//eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface GroupBoxProps {}
 export class GroupBox extends ContainerComponent<GroupBoxProps> {
   begin(...title: ContentsArgs) {
