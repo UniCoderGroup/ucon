@@ -85,7 +85,7 @@ export abstract class BlockComponent<P = unknown> extends Component<
    */
   redrawAll(): void {
     let strs = this.render();
-    for (let i in strs) {
+    for (let i = 0; i < strs.length; i++) {
       this.lines[i].content = combiner(strs[i]);
       //If no proxy
       this.con.redraw(this.lines[i]);
