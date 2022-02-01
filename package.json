@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/KermanX/ucon#readme",
   "devDependencies": {
-    "@types/node": "16.11.21",
+    "@types/node": "16.11.22",
     "cross-env": "7.0.3",
     "node-dev": "7.1.0",
     "ts-node": "10.4.0",
