@@ -9,5 +9,6 @@ import { stdout } from "node:process";
 import UNodeTty from "utty-node";
 import UCon from "./ucon";
 
-export const ucon = new UCon(new UNodeTty(stdout));
+const ucon = new UCon(new UNodeTty(stdout));
+export default ucon;
 export { UCon };
