@@ -2,7 +2,7 @@ import { ContentsArgs } from "./global";
 import { ConForBlock, ConForContainer, ConForInline } from "./ucon";
 import { Line, Midware, RefMidware } from "./line";
 import { combiner, inlStr } from "./std_components/inline";
-import { ucon } from "./index";
+import ucon from "./index";
 /**
  * The base class of all the components
  */
