@@ -10,3 +10,4 @@ import UNodeTty from "utty-node";
 import UCon from "./ucon";
 
 export const ucon = new UCon(new UNodeTty(stdout));
+export { UCon };
