@@ -109,4 +109,4 @@ let group = new ucon.Group();
 
 [TODO]
 
-[^1]: https://reactjs.org/docs/components-and-props.html
+[^1]: https://reactjs.org/docs/components-and-props.html, Introduction

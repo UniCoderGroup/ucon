@@ -111,4 +111,4 @@ let group = new ucon.Group();
 
 [TODO]
 
-[^1]: https://react.docschina.org/docs/react-component.html
+[^1]: https://reactjs.org/docs/components-and-props.html，引言
