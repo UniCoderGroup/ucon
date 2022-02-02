@@ -3,15 +3,21 @@
   "version": "1.0.0",
   "description": "A super framework for nodejs console.",
   "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "exports":"./build/index.js",
+  "types": "./build/index.d.ts",
   "type": "module",
+	"files": [
+		"build",
+		"!build/dev.d.ts",
+		"!build/dev.js"
+	],
   "scripts": {
     "dev": "cross-env TS_NODE_PROJECT=tsconfig.json node-dev --respawn --deps=-1 --clear src/dev.ts",
     "build": "tsc"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/KermanX/ucon.git"
+    "url": "git+https://github.com/UniCoderGroup/ucon.git"
   },
   "keywords": [
     "console",
@@ -20,9 +26,10 @@
   "author": "_Kerman@UniCoder",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/KermanX/ucon/issues"
+    "url": "https://github.com/UniCoderGroup/ucon/issues"
   },
-  "homepage": "https://github.com/KermanX/ucon#readme",
+  "funding": "https://github.com/UniCoderGroup/ucon?sponsor=1",
+  "homepage": "https://github.com/UniCoderGroup/ucon#readme",
   "devDependencies": {
     "@types/node": "16.11.21",
     "cross-env": "7.0.3",
