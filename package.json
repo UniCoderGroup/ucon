@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "description": "A super framework for nodejs console.",
   "main": "build/index.js",
-  "exports":"./build/index.js",
+  "exports": "./build/index.js",
   "types": "./build/index.d.ts",
   "type": "module",
-	"files": [
-		"build",
-		"!build/dev.d.ts",
-		"!build/dev.js"
-	],
+  "files": [
+    "build",
+    "!build/dev.d.ts",
+    "!build/dev.js"
+  ],
   "scripts": {
     "dev": "cross-env TS_NODE_PROJECT=tsconfig.json node-dev --respawn --deps=-1 --clear src/dev.ts",
     "build": "tsc"
