@@ -1,11 +1,10 @@
-import { ContentsArgs } from "./global";
 import { ConForBlock, ConForContainer, ConForInline } from "./ucon";
 import { Line, Midware, RefMidware } from "./line";
 import { combiner, inlStr } from "./std_components/inline";
 import ucon from "./index";
 
 /**
- * The base class of all the components
+ * The base class of all the components.
  */
 export abstract class Component<P, C> {
   constructor(props: P, con: C) {
@@ -30,9 +29,15 @@ export abstract class Component<P, C> {
 }
 
 /**
+ * Get P (props) type of a Component.
+ */
+export type ComponentP<T extends Component<unknown, unknown>> =
+  T extends Component<infer P, any> ? P : never;
+
+/**
  * Block Component:
  * Component that print several lines in the screen.
- * @example Such as `ProgressBar`
+ * @example Such as `ProgressBar`.
  */
 export abstract class BlockComponent<P = unknown> extends Component<
   P,
@@ -72,7 +77,7 @@ export abstract class BlockComponent<P = unknown> extends Component<
   }
 
   /**
-   * Redraw the line of `offsetLine`
+   * Redraw the line of `offsetLine`.
    * @param offsetLine which line to redraw.
    */
   redraw(offsetLine = 0): void {
@@ -100,20 +105,21 @@ export abstract class BlockComponent<P = unknown> extends Component<
   abstract render(): string[];
 }
 
-export type BlockComponentConstructor<C extends BlockComponent<P>, P> = new (
-  porps: P,
+export type BlockComponentConstructor<C extends BlockComponent> = new (
+  porps: ComponentP<C>,
   con?: ConForBlock
 ) => C;
 
 /**
  * Container Component:
  * Component that can process the log text.
- * @example Such as `GroupBox`
+ * @example Such as `GroupBox`.
  */
-export abstract class ContainerComponent<P = unknown> extends Component<
-  P,
-  ConForContainer
-> {
+export abstract class ContainerComponent<
+  P = unknown,
+  BA extends Array<unknown> = unknown[],
+  EA extends Array<unknown> = unknown[]
+> extends Component<P, ConForContainer> {
   constructor(props: P, con: ConForContainer = ucon) {
     super(props, con);
   }
@@ -126,7 +132,7 @@ export abstract class ContainerComponent<P = unknown> extends Component<
   }
 
   /**
-   * Register itself
+   * Register itself.
    */
   unregister(): void {
     this.con.unregisterContainer(this);
@@ -134,7 +140,7 @@ export abstract class ContainerComponent<P = unknown> extends Component<
 
   /**
    * Called when a new line is created.
-   * @param ref Ununsed
+   * @param ref Ununsed.
    * @returns This component's midware.
    */
   newLine(ref: RefMidware): Midware {
@@ -143,25 +149,33 @@ export abstract class ContainerComponent<P = unknown> extends Component<
 
   /**
    * Called when begin this Container.
-   * Always calls `this.register`
+   * Always calls `this.register`.
    */
-  abstract begin(...args: any): void;
-
-  /**
-   * Called when end this Container.
-   * Always calls `this.unregister`
-   */
-  abstract end(...args: any): void;
+  abstract begin(...args: BA): void;
 
   /**
    * @returns The midware.
    */
   abstract getMidware(...args: any): Midware;
 
-  log(...objs: ContentsArgs): Line {
-    return this.con.log(...objs);
-  }
+  /**
+   * Called when end this Container.
+   * Always calls `this.unregister`.
+   */
+  abstract end(...args: EA): void;
 }
+
+/**
+ * Get BA (`begin()` Args) type of a ContainerComponent.
+ */
+export type ContainerBA<T extends ContainerComponent> =
+  T extends ContainerComponent<any, infer BA, any> ? BA : never;
+
+/**
+ * Get EA (`end()` Args) type of a ContainerComponent.
+ */
+export type ContainerEA<T extends ContainerComponent> =
+  T extends ContainerComponent<any, any, infer EA> ? EA : never;
 
 export type ContainerComponentConstructor<
   C extends ContainerComponent<P>,

@@ -1,4 +1,4 @@
-import { ContainerComponent, InlineComponent } from "./component";
+import { ContainerComponent, InlineComponent, ContainerBA, ContainerEA } from './component';
 import UTty from "utty";
 import { Line, createLine, Midware, RefMidware } from "./line";
 import { combiner } from "./std_components/inline";
@@ -135,5 +135,16 @@ export default class UCon
    */
   log(...objs: ContentsArgs): Line {
     return this.addLine(combiner(...objs));
+  }
+  
+  /**
+   * Use a ContainerComponent.
+   */
+  use<C extends ContainerComponent>(c:C,...beginArgs:ContainerBA<C>):void{
+    c.begin(...beginArgs);
+  }
+
+  unuse<C extends ContainerComponent>(c:C,...endArgs:ContainerEA<C>):void{
+    c.end(...endArgs);
   }
 }
