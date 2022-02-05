@@ -74,7 +74,7 @@ export class ConLine implements Line {
     return this.midwares[0]({
       next: createNext(0),
       line: this,
-      ...(additionalContext === null ? {} : additionalContext),
+      ...(additionalContext === null ? {} : additionalContext)
     });
   }
 }

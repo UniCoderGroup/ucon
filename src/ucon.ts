@@ -24,6 +24,7 @@ export interface ConForContainer extends ConWithUTty {
   log(...objs: ContentsArgs): Line;
 }
 export type ConForInline = ConWithUTty;
+export type ConForSth = ConForBlock|ConForContainer|ConForInline;
 
 /**
  * Main.
@@ -137,14 +138,14 @@ export default class UCon
     return this.addLine(combiner(...objs));
   }
   
-  /**
-   * Use a ContainerComponent.
-   */
-  use<C extends ContainerComponent>(c:C,...beginArgs:ContainerBA<C>):void{
-    c.begin(...beginArgs);
-  }
+  // /**
+  //  * Use a ContainerComponent.
+  //  */
+  // use<C extends ContainerComponent>(c:C,...beginArgs:ContainerBA<C>):void{
+  //   c.begin(...beginArgs);
+  // }
 
-  unuse<C extends ContainerComponent>(c:C,...endArgs:ContainerEA<C>):void{
-    c.end(...endArgs);
-  }
+  // unuse<C extends ContainerComponent>(c:C,...endArgs:ContainerEA<C>):void{
+  //   c.end(...endArgs);
+  // }
 }

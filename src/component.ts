@@ -1,12 +1,13 @@
 import { ConForBlock, ConForContainer, ConForInline } from "./ucon";
 import { Line, Midware, RefMidware } from "./line";
-import { combiner, inlStr } from "./std_components/inline";
-import ucon from "./index";
+import { combiner, inlStr, align } from './std_components/inline';
+import ucon, { ContentsArgs } from "./index";
+import _ from "lodash";
 
 /**
  * The base class of all the components.
  */
-export abstract class Component<P, C> {
+export abstract class Component<P /*props*/ = unknown, C /*ConForSth*/ = unknown> {
   constructor(props: P, con: C) {
     this.props = props;
     this.con = con;
@@ -15,24 +16,42 @@ export abstract class Component<P, C> {
   /**
    * Defalt Properties.
    */
-  defaultProps: P | undefined = undefined;
+  readonly defaultProps: P | undefined = undefined;
 
   /**
    * Properties.
    */
-  readonly props: P;
+  props: P;
 
   /**
    * UCon console.
    */
   readonly con: C;
+
+  /**
+   * Init the component.
+   */
+  init(): void {
+    this.props = _.defaults(this.props, this.defaultProps);
+  }
 }
 
 /**
  * Get P (props) type of a Component.
  */
-export type ComponentP<T extends Component<unknown, unknown>> =
+export type ComponentP<T extends Component> =
   T extends Component<infer P, any> ? P : never;
+/**
+ * Get C (ConForSth) type of a Component.
+ */
+export type ComponentC<T extends Component> =
+  T extends Component<any, infer C> ? C : never;
+
+export type ComponentConstructorParams<C extends Component> =
+  [props: ComponentP<C>, con: ComponentC<C>];
+
+export type ComponentConstructor<C extends Component> =
+  new (...args:ComponentConstructorParams<C>) => C;
 
 /**
  * Block Component:
@@ -53,14 +72,23 @@ export abstract class BlockComponent<P = unknown> extends Component<
   lines: Line[] = [];
 
   /**
-   * Is this component mounted.
+   * If this component is mounted.
    */
   mounted = false;
+
+  /**
+   * If this component has never been mounted.
+   */
+  neverMounted = true;
 
   /**
    * Print to the screen.
    */
   mount(): void {
+    if (this.neverMounted) {
+      this.init();
+      this.neverMounted = false;
+    }
     this.mounted = true;
     const strs = this.render();
     for (const str of strs) {
@@ -105,11 +133,6 @@ export abstract class BlockComponent<P = unknown> extends Component<
   abstract render(): string[];
 }
 
-export type BlockComponentConstructor<C extends BlockComponent> = new (
-  porps: ComponentP<C>,
-  con?: ConForBlock
-) => C;
-
 /**
  * Container Component:
  * Component that can process the log text.
@@ -119,7 +142,7 @@ export abstract class ContainerComponent<
   P = unknown,
   BA extends Array<unknown> = unknown[],
   EA extends Array<unknown> = unknown[]
-> extends Component<P, ConForContainer> {
+  > extends Component<P, ConForContainer> {
   constructor(props: P, con: ConForContainer = ucon) {
     super(props, con);
   }
@@ -147,9 +170,14 @@ export abstract class ContainerComponent<
     return this.getMidware();
   }
 
+  log(...objs: ContentsArgs): Line {
+    return this.con.log(...objs);
+  }
+
   /**
-   * Called when begin this Container.
-   * Always calls `this.register`.
+   * Called to begin this Container.
+   * Always calls `this.init` before,
+   * and `this.register` after outputing the beginning lines.
    */
   abstract begin(...args: BA): void;
 
@@ -180,7 +208,7 @@ export type ContainerEA<T extends ContainerComponent> =
 export type ContainerComponentConstructor<
   C extends ContainerComponent<P>,
   P
-> = new (porps: P, con?: ConForContainer) => C;
+  > = new (porps: P, con?: ConForContainer) => C;
 
 /**
  * Inline Component:
@@ -200,4 +228,10 @@ export abstract class InlineComponent<P = unknown> extends Component<
    * Wait for you to impl it.
    */
   abstract render(): string;
+}
+
+export function CreateComponentAndInit<C extends Component>(ctor:ComponentConstructor<C>,...args:ComponentConstructorParams<C>) :C{
+  const c = new ctor(...args);
+  c.init();
+  return c;
 }

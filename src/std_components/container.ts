@@ -15,6 +15,7 @@ export class GroupBox extends ContainerComponent<
   GroupBoxEndArgs
 > {
   begin(...args:GroupBoxBeginArgs) {
+    this.init();
     this.con.addLine(combiner("\u256D\u2574", chalkjs(chalk.bold, ...args)));
     this.register();
     let x=args[0];
