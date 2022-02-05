@@ -1,6 +1,7 @@
 import chalk, { ChalkInstance } from "chalk";
-import { InlineComponent } from "../component";
+import { CreateComponentAndInit, InlineComponent } from "../component";
 import { BlankContents, ContentsArgs, ContentsProps } from "../global";
+import ucon from "../";
 
 ///// InlStr ///////////////////////////////////////////////
 export type InlStrProps = string;
@@ -14,7 +15,7 @@ export class InlStr extends InlineComponent<InlStrProps> {
  * It converts string to InlineComponent.
  */
 export function inlStr(str: string): InlStr {
-  return new InlStr(str);
+  return CreateComponentAndInit(InlStr,str,ucon);
 }
 ////////////////////////////////////////////////////////////
 

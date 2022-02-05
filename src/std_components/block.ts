@@ -1,7 +1,7 @@
 import { ConForBlock, ContainerStack } from "../ucon";
 import {
   BlockComponent,
-  BlockComponentConstructor,
+  ComponentConstructor,
   InlineComponent,
   ComponentP,
 } from "../component";
@@ -11,6 +11,7 @@ import { align, AlignDirection, chalkjs, combiner, rightAlign } from "./inline";
 import chalk from "chalk";
 import { ContentsArgs } from "../global";
 import _ from "lodash";
+import { ComponentC } from "../component";
 
 ///// Composition //////////////////////////////////////////
 
@@ -102,9 +103,9 @@ export interface SwitcherProps<
   C2 extends BlockComponent
 > {
   prop1: ComponentP<C1>;
-  ctor1: BlockComponentConstructor<C1>;
+  ctor1: ComponentConstructor<C1>;
   prop2: ComponentP<C2>;
-  ctor2: BlockComponentConstructor<C2>;
+  ctor2: ComponentConstructor<C2>;
 }
 type SwitcherState = 0 | 1 | 2;
 /**
@@ -122,8 +123,14 @@ export class Switcher<
   mount(state: SwitcherState = 0) {
     this.mounted = true;
     this.fakeCon = new SwitcherFakeCon(this.con);
-    this.comp1 = new this.props.ctor1(this.props.prop1, this.fakeCon);
-    this.comp2 = new this.props.ctor2(this.props.prop2, this.fakeCon);
+    this.comp1 = new this.props.ctor1(
+      this.props.prop1,
+      this.fakeCon /*[*/ as ComponentC<C1> /*]*/
+    ); // See https://github.com/microsoft/TypeScript/issues/47745
+    this.comp2 = new this.props.ctor2(
+      this.props.prop2,
+      this.fakeCon as ComponentC<C2>
+    );
     this.switch(state);
   }
   unmount() {
