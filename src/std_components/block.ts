@@ -4,6 +4,7 @@ import {
   ComponentConstructor,
   InlineComponent,
   ComponentP,
+  ComponentC
 } from "../component";
 import { createLine, Line, Midware } from "../line";
 import UTty from "utty";
@@ -11,7 +12,6 @@ import { align, AlignDirection, chalkjs, combiner, rightAlign } from "./inline";
 import chalk from "chalk";
 import { ContentsArgs } from "../global";
 import _ from "lodash";
-import { ComponentC } from "../component";
 
 ///// Composition //////////////////////////////////////////
 
@@ -125,12 +125,14 @@ export class Switcher<
     this.fakeCon = new SwitcherFakeCon(this.con);
     this.comp1 = new this.props.ctor1(
       this.props.prop1,
-      this.fakeCon /*[*/ as ComponentC<C1> /*]*/
-    ); // See https://github.com/microsoft/TypeScript/issues/47745
+      this.fakeCon
+    ); 
     this.comp2 = new this.props.ctor2(
       this.props.prop2,
-      this.fakeCon as ComponentC<C2>
+      this.fakeCon
     );
+    let x:SwitcherProps = this.props;
+
     this.switch(state);
   }
   unmount() {
