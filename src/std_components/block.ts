@@ -7,7 +7,7 @@ import {
   ComponentC
 } from "../component";
 import { createLine, Line, Midware } from "../line";
-import UTty from "utty";
+import UTty, { LineContext } from "utty";
 import { align, AlignDirection, chalkjs, combiner, rightAlign } from "./inline";
 import chalk from "chalk";
 import { ContentsArgs } from "../global";
@@ -33,7 +33,7 @@ class SwitcherFakeLine implements Line {
   get midwares(): Midware[] {
     return this.realLine.midwares;
   }
-  render<AC extends Object>(additionalContext?: AC): string {
+  render(additionalContext?: LineContext): [string,LineContext] {
     return this.realLine.render(additionalContext);
   }
 }
@@ -125,14 +125,12 @@ export class Switcher<
     this.fakeCon = new SwitcherFakeCon(this.con);
     this.comp1 = new this.props.ctor1(
       this.props.prop1,
-      this.fakeCon
-    ); 
+      this.fakeCon /*[*/ as ComponentC<C1> /*]*/
+    ); // See https://github.com/microsoft/TypeScript/issues/47745
     this.comp2 = new this.props.ctor2(
       this.props.prop2,
-      this.fakeCon
+      this.fakeCon /*[*/ as ComponentC<C2> /*]*/
     );
-    let x:SwitcherProps = this.props;
-
     this.switch(state);
   }
   unmount() {

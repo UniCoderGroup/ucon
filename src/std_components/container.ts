@@ -1,31 +1,32 @@
 import chalk from "chalk";
 import { ContainerComponent } from "../component";
 import { ContentsArgs } from "../global";
-import { MidwareContext } from "../line";
+import { MidwareContext, Midware } from "../line";
 import { chalkjs, combiner, inlStr } from "./inline";
 
 ///// GroupBox /////////////////////////////////////////////
 //eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface GroupBoxProps {};
-export type GroupBoxBeginArgs = [...title:ContentsArgs];
+export type GroupBoxBeginArgs = [...title: ContentsArgs];
 export type GroupBoxEndArgs = [];
 export class GroupBox extends ContainerComponent<
   GroupBoxProps,
   GroupBoxBeginArgs,
   GroupBoxEndArgs
 > {
-  begin(...args:GroupBoxBeginArgs) {
+  begin(...args: GroupBoxBeginArgs) {
     this.init();
     this.con.addLine(combiner("\u256D\u2574", chalkjs(chalk.bold, ...args)));
     this.register();
-    let x=args[0];
+    let x = args[0];
   }
-  getMidware() {
+  getMidware(): Midware {
     return function (ctx: MidwareContext) {
-      return "\u2502  " + ctx.next();
+      const next = ctx.next();
+      return ["\u2502  " + next[0], next[1]];
     };
   }
-  end(..._args:GroupBoxEndArgs) {
+  end(..._args: GroupBoxEndArgs) {
     this.unregister();
     this.con.addLine(
       inlStr(
