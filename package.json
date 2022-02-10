@@ -31,7 +31,7 @@
   "funding": "https://github.com/UniCoderGroup/ucon?sponsor=1",
   "homepage": "https://github.com/UniCoderGroup/ucon#readme",
   "devDependencies": {
-    "@types/node": "16.11.22",
+    "@types/node": "16.11.23",
     "cross-env": "7.0.3",
     "node-dev": "7.1.0",
     "ts-node": "10.5.0",
