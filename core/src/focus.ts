@@ -56,5 +56,5 @@ class FocusElement{
 }
 export class FocusMap{
 
-  focusables:Focusable[]=[]; 
+  focusables:Focusable[]=[];
 }
