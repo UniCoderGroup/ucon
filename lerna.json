@@ -1,0 +1,10 @@
+{
+  "packages": [
+    "components/**",
+    "core/**",
+    "project/roadmap",
+    "utils/**",
+    "utty/**"
+  ],
+  "version": "0.0.0"
+}

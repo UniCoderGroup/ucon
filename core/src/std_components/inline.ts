@@ -15,7 +15,7 @@ export class InlStr extends InlineComponent<InlStrProps> {
  * It converts string to InlineComponent.
  */
 export function inlStr(str: string): InlStr {
-  return CreateComponentAndInit(InlStr,str,ucon);
+  return CreateComponentAndInit(InlStr, str, ucon);
 }
 ////////////////////////////////////////////////////////////
 
@@ -39,7 +39,7 @@ export class Combiner extends InlineComponent<CombinerProps> {
  * It combines several text/InlineComponents to one.
  */
 export function combiner(...contents: ContentsArgs): Combiner {
-  return new Combiner({ contents });
+  return CreateComponentAndInit(Combiner, { contents }, ucon);
 }
 ////////////////////////////////////////////////////////////
 
@@ -69,7 +69,7 @@ export class SymbolIcon extends InlineComponent<SymbolIconProps> {
  * @param name Name of the symbol.
  */
 export function symbolIcon(name: SymbolIconNames) {
-  return new SymbolIcon({ name });
+  return CreateComponentAndInit(SymbolIcon, { name }, ucon);
 }
 ////////////////////////////////////////////////////////////
 
@@ -126,7 +126,7 @@ export class LeftAlign extends Align {
  * It align a text to left.
  */
 export function leftAlign(width: number, ...contents: ContentsArgs): LeftAlign {
-  return new LeftAlign({ width, contents });
+  return CreateComponentAndInit(LeftAlign, { width, contents }, ucon);
 }
 ////////////////////////////////////////////////////////////
 
@@ -148,7 +148,7 @@ export function middleAlign(
   width: number,
   ...contents: ContentsArgs
 ): MiddleAlign {
-  return new MiddleAlign({ width, contents });
+  return CreateComponentAndInit(MiddleAlign, { width, contents }, ucon);
 }
 ////////////////////////////////////////////////////////////
 
@@ -169,7 +169,7 @@ export function rightAlign(
   width: number,
   ...contents: ContentsArgs
 ): RightAlign {
-  return new RightAlign({ width, contents });
+  return CreateComponentAndInit(RightAlign, { width, contents }, ucon);
 }
 ////////////////////////////////////////////////////////////
 
@@ -194,6 +194,6 @@ export function chalkjs(
   chalk: ChalkInstance,
   ...contents: ContentsArgs
 ): Chalkjs {
-  return new Chalkjs({ chalk, contents });
+  return CreateComponentAndInit(Chalkjs, { chalk, contents }, ucon);
 }
 ////////////////////////////////////////////////////////////

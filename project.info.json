@@ -1,0 +1,49 @@
+{
+  "classes": [
+    {
+      "name": "ts",
+      "compile": "tsc",
+      "build":"tsc"
+    },
+    {
+        "name":"react",
+        "run":"npx react-scripts start",
+        "build":"npx react-scripts build"
+    }
+  ],
+  "packages": [
+    {
+      "name": "core",
+      "path": "./core",
+      "class": "ts"
+    },
+    {
+      "name": "roadmap",
+      "path": "./project/roadmap",
+      "class":"react"
+    },
+    {
+      "name": "scripts",
+      "path": "./scripts",
+      "class": "ts",
+      "run": "node ./dist/run.js -h"
+    },
+    {
+        "name":"focus-system",
+        "path":"./utils/focus-system",
+        "class":"react"
+    },
+    {
+        "name":"range-set",
+        "path":"./utils/range-set",
+        "class":"ts",
+        "compile":null,
+        "run":"ts-node ./src/index.ts"
+    },
+    {
+      "name":"utty",
+      "path":"./utty/utty",
+      "class":"ts"
+    }
+  ]
+}

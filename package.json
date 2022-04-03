@@ -1,47 +1,38 @@
 {
   "name": "ucon",
-  "version": "1.0.0",
-  "description": "A super framework for nodejs console.",
-  "main": "build/index.js",
-  "exports": "./build/index.js",
-  "types": "./build/index.d.ts",
-  "type": "module",
-  "files": [
-    "build",
-    "!build/dev.d.ts",
-    "!build/dev.js"
-  ],
-  "scripts": {
-    "dev": "cross-env TS_NODE_PROJECT=tsconfig.json node-dev --respawn --deps=-1 --clear src/dev.ts",
-    "build": "tsc"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/UniCoderGroup/ucon.git"
-  },
-  "keywords": [
-    "console",
-    "cli"
-  ],
+  "private": true,
   "author": "_Kerman@UniCoder",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/UniCoderGroup/ucon/issues"
   },
+  "scripts": {
+    "test": "cross-env NODE_OPTIONS=\"--experimental-vm-modules\" jest --coverage",
+    "build": "tsc -b"
+  },
   "funding": "https://github.com/UniCoderGroup/ucon?sponsor=1",
   "homepage": "https://github.com/UniCoderGroup/ucon#readme",
   "devDependencies": {
-    "@types/node": "16.11.26",
-    "cross-env": "7.0.3",
-    "node-dev": "7.2.0",
-    "ts-node": "10.7.0",
+    "lerna": "^4.0.0",
+    "cross-env": "^7.0.3",
+    "jest": "27.5.1",
     "typescript": "4.6.2"
   },
-  "dependencies": {
-    "@types/lodash": "^4.14.177",
-    "chalk": "^5.0.0",
-    "lodash": "^4.17.21",
-    "utty": "^1.0.2",
-    "utty-node": "^1.0.3"
+  "jest": {
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ],
+    "roots": [
+      "<rootDir>/components/",
+      "<rootDir>/core/",
+      "<rootDir>/project/roadmap",
+      "<rootDir>/utils/",
+      "<rootDir>/utty/"
+    ],
+    "moduleNameMapper": {
+      "chalk": "chalk/source/index.js",
+      "#ansi-styles": "chalk/source/vendor/ansi-styles/index.js",
+      "#supports-color": "chalk/source/vendor/supports-color/index.js"
+    }
   }
 }

@@ -1,0 +1,37 @@
+{
+  "name": "ucon",
+  "version": "0.0.0",
+  "description": "A super framework of text-based output with components.",
+  "keywords": [
+    "component",
+    "ucon"
+  ],
+  "author": "_Kerman <KermanX@qq.com>",
+  "homepage": "https://github.com/UniCoderGroup/ucon/tree/main/core#readme",
+  "license": "MIT",
+  "main": "dist/ucon.js",
+  "module": "dist/ucon.module.js",
+  "directories": {
+    "lib": "dist",
+    "test": "__tests__"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UniCoderGroup/ucon.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/UniCoderGroup/ucon/issues"
+  },
+  "devDependencies": {
+    "typescript": "4.6.2"
+  }
+}

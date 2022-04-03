@@ -1,13 +1,13 @@
 import { InlineComponent } from "./component";
 import { ContainerStack } from "./ucon";
-import { LineContext } from "utty";
+import { LineContext, LineContent } from "utty";
 
 export type MidwareContext = LineContext & {
-  next: () => [string, LineContext];
+  next: () => LineContent;
   line: Line;
 };
 
-export type Midware = (ctx: MidwareContext) => [string, LineContext];
+export type Midware = (ctx: MidwareContext) => LineContent;
 
 export interface RefMidware {
   line: Line;
@@ -20,7 +20,7 @@ export interface Line {
   get content(): InlineComponent;
   set content(content: InlineComponent);
   get midwares(): Midware[];
-  render(additionalContext?: LineContext): [string, LineContext];
+  render(additionalContext?: LineContext): LineContent;
 }
 
 /**
@@ -51,13 +51,13 @@ export class ConLine implements Line {
    * Render this line.
    * @returns result text
    */
-  render(additionalContext?: LineContext): [string, LineContext] {
+  render(additionalContext?: LineContext): LineContent {
     /**
      * Create the `next` in the context of `n`th midware
      * @param n index of midware
      * @returns `next` in the context of `n`th midware
      */
-    const createNext: (n: number) => () => [string, LineContext] = (
+    const createNext: (n: number) => () => LineContent = (
       n: number
     ) => {
       if (n === this.midwares.length - 1) {

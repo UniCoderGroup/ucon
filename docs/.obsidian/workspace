@@ -1,0 +1,97 @@
+{
+  "main": {
+    "id": "2c96cb91f2777d95",
+    "type": "split",
+    "children": [
+      {
+        "id": "8676e27a2db79527",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "zh-cn/快速开始.md",
+            "mode": "preview",
+            "source": false
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "ad5cfa2586961ff9",
+    "type": "split",
+    "children": [
+      {
+        "id": "e17140d5d660f7c1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d28d0864720c752c",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "6f41c6935ae0a511",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "3ad3ddf6e33247e5",
+    "type": "split",
+    "children": [
+      {
+        "id": "63fc3e056f0e1a29",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f9480118a80ab55d",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "zh-cn/快速开始.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "active": "8676e27a2db79527",
+  "lastOpenFiles": [
+    "zh-cn/快速开始.md",
+    "zh-cn/utty.md",
+    "未命名.md",
+    "未命名 1.md"
+  ]
+}

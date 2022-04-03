@@ -1,8 +1,17 @@
-import { ContainerComponent, InlineComponent, ContainerBA, ContainerEA } from './component';
+import {
+  ContainerComponent,
+  InlineComponent,
+  ContainerBA,
+  ContainerEA,
+  Component,
+  InputComponent,
+} from "./component";
 import UTty from "utty";
 import { Line, createLine, Midware, RefMidware } from "./line";
 import { combiner } from "./std_components/inline";
 import { ContentsArgs } from "./global";
+import { FocusTarget } from "./focus";
+import { InputIP } from ".";
 
 export type ContainerStack = ContainerComponent[];
 
@@ -10,6 +19,7 @@ export interface ConWithUTty {
   get tty(): UTty;
   get lineNum(): number;
 }
+
 export interface ConForBlock extends ConWithUTty {
   get stack(): ContainerStack;
   insertLine(y: number, line: Line): void;
@@ -17,20 +27,26 @@ export interface ConForBlock extends ConWithUTty {
   addLine(content: InlineComponent): Line;
   redraw(line: Line): void;
 }
+
 export interface ConForContainer extends ConWithUTty {
   registerContainer(container: ContainerComponent): void;
   unregisterContainer(container: ContainerComponent): void;
   addLine(content: InlineComponent): Line;
   log(...objs: ContentsArgs): Line;
 }
+
 export type ConForInline = ConWithUTty;
-export type ConForSth = ConForBlock|ConForContainer|ConForInline;
+
+export interface ConForInput extends ConWithUTty {
+  focus: FocusTarget | null;
+  getFocusInnerPos(focus: FocusTarget): InputIP<FocusTarget>|undefined;
+}
 
 /**
  * Main.
  */
 export default class UCon
-  implements ConForBlock, ConForContainer, ConForInline
+  implements ConForBlock, ConForContainer, ConForInline, ConForInput
 {
   constructor(tty: UTty) {
     this.tty = tty;
@@ -51,8 +67,22 @@ export default class UCon
    */
   stack: ContainerStack = [];
 
+  /**
+   * Focus of inputing.
+   */
+  focus: FocusTarget | null = null;
+  protected focusInnerPos: InputIP<FocusTarget>|undefined;
+
   get lineNum(): number {
     return this.lines.length;
+  }
+
+  getFocusInnerPos(focus: FocusTarget): InputIP<FocusTarget>|undefined {
+    if (this.focus === focus) {
+      return this.focusInnerPos;
+    } else {
+      return undefined;
+    }
   }
 
   /**
@@ -63,7 +93,6 @@ export default class UCon
     this.tty.replace(line.y, line.render());
   }
 
-  b = 0;
   /**
    * Insert a line.
    */
@@ -137,7 +166,7 @@ export default class UCon
   log(...objs: ContentsArgs): Line {
     return this.addLine(combiner(...objs));
   }
-  
+
   // /**
   //  * Use a ContainerComponent.
   //  */

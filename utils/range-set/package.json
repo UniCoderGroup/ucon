@@ -1,0 +1,13 @@
+{
+	"name": "range-set",
+	"version": "1.0.0",
+	"description": "A library of set whose members are defined as ranges.",
+	"keywords": [
+	],
+	"main": "src/index.tsx",
+	"dependencies": {
+	},
+	"devDependencies": {
+		"typescript": "4.4.2"
+	}
+}

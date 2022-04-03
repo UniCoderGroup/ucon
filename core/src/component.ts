@@ -1,13 +1,17 @@
 import { ConForBlock, ConForContainer, ConForInline } from "./ucon";
 import { Line, Midware, RefMidware } from "./line";
-import { combiner, inlStr, align } from './std_components/inline';
-import ucon, { ContentsArgs } from "./index";
+import { combiner, inlStr } from "./std_components/inline";
+import ucon, { ConForInput, ContentsArgs } from "./index";
 import _ from "lodash";
+import { FocusMoveArgs, FocusMoveResult } from "./focus";
 
 /**
  * The base class of all the components.
  */
-export abstract class Component<P /*props*/ = unknown, C /*ConForSth*/ = unknown> {
+export abstract class Component<
+  P /*props*/ = unknown,
+  C /*ConForSth*/ = unknown
+> {
   constructor(props: P, con: C) {
     this.props = props;
     this.con = con;
@@ -39,19 +43,24 @@ export abstract class Component<P /*props*/ = unknown, C /*ConForSth*/ = unknown
 /**
  * Get P (props) type of a Component.
  */
-export type ComponentP<T extends Component> =
-  T extends Component<infer P, any> ? P : never;
+export type ComponentP<T extends Component> = T extends Component<infer P, any>
+  ? P
+  : never;
 /**
  * Get C (ConForSth) type of a Component.
  */
-export type ComponentC<T extends Component> =
-  T extends Component<any, infer C> ? C : never;
+export type ComponentC<T extends Component> = T extends Component<any, infer C>
+  ? C
+  : never;
 
-export type ComponentConstructorParams<C extends Component> =
-  [props: ComponentP<C>, con: ComponentC<C>];
+export type ComponentConstructorParams<C extends Component> = [
+  props: ComponentP<C>,
+  con: ComponentC<C>
+];
 
-export type ComponentConstructor<C extends Component> =
-  new (...args:ComponentConstructorParams<C>) => C;
+export type ComponentConstructor<C extends Component> = new (
+  ...args: ComponentConstructorParams<C>
+) => C;
 
 /**
  * Block Component:
@@ -142,7 +151,7 @@ export abstract class ContainerComponent<
   P = unknown,
   BA extends Array<unknown> = unknown[],
   EA extends Array<unknown> = unknown[]
-  > extends Component<P, ConForContainer> {
+> extends Component<P, ConForContainer> {
   constructor(props: P, con: ConForContainer = ucon) {
     super(props, con);
   }
@@ -208,7 +217,7 @@ export type ContainerEA<T extends ContainerComponent> =
 export type ContainerComponentConstructor<
   C extends ContainerComponent<P>,
   P
-  > = new (porps: P, con?: ConForContainer) => C;
+> = new (porps: P, con?: ConForContainer) => C;
 
 /**
  * Inline Component:
@@ -230,7 +239,39 @@ export abstract class InlineComponent<P = unknown> extends Component<
   abstract render(): string;
 }
 
-export function CreateComponentAndInit<C extends Component>(ctor:ComponentConstructor<C>,...args:ComponentConstructorParams<C>) :C{
+/**
+ * Input Component:
+ * Component that decorates one line
+ * @example Such as `Combiner`,`Italitic`
+ */
+export abstract class InputComponent<
+  P = unknown,
+  InnerPos = unknown
+> extends Component<P, ConForInput> {
+  constructor(props: P, con: ConForInput = ucon) {
+    super(props, con);
+  }
+
+  get innerPos(): InnerPos | undefined {
+    return this.con.getFocusInnerPos(this) as InnerPos | undefined;
+  }
+
+  abstract run(): void;
+  abstract onKeypress(): void;
+  abstract onFocusMove(args: FocusMoveArgs<InnerPos>): FocusMoveResult;
+}
+
+export type InputIP<T extends InputComponent> = T extends InputComponent<
+  any,
+  infer IP
+>
+  ? IP
+  : never;
+
+export function CreateComponentAndInit<C extends Component>(
+  ctor: ComponentConstructor<C>,
+  ...args: ComponentConstructorParams<C>
+): C {
   const c = new ctor(...args);
   c.init();
   return c;
