@@ -1,4 +1,4 @@
-# `/utty-node`
+# `utty-node`
 
 > TODO: description
 

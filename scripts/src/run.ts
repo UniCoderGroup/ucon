@@ -1,103 +1,53 @@
-import { Command } from "commander";
-import fs from "fs";
+import { Argument, Command, Option } from "commander";
+import * as P from "./project.js";
 import { execSync } from "child_process";
-import * as path from "path";
-const info = getInfo();
-process.stdout;
-const program = new Command();
 
-program.option("-i, --info <file>", "Specific project info file.");
-
-program
-  .command("run <package>")
-  .description("Run a package")
-  .option("-f, --file <path>", "File in the package to run")
-  .action((pkgName: string, options, command) => {
-    const pkg = info.packages.find((v) => v.name === pkgName);
-    if (pkg === undefined)
-      throw new Error('Unknown package name :"' + pkgName + '"!');
-    console.log("Package info (classses filled in): ");
-    console.log(" - Path:\t" + pkg.path);
-    const dir = path.resolve("../", pkg.path);
-    console.log(" - Run at:\t" + dir);
-    console.log('Running package "' + pkgName + '" ...');
-  });
-
-program.parse(process.argv);
-resolveClasses(info);
-
-// let execIn = fs.createReadStream(""),
-// execOut = new WriteStream(1),
-// execErr = new WriteStream(2);
-// execOut.on("data",data=>{
-//   console.log("????????",data.toString());
-// });
-// execErr.on("data",data=>{
-//   console.error("????????",data.toString());
-// });
-
-if (pkg.compile) {
-  console.log(" - Compile cmd:\t" + pkg.compile);
-  try {
-    execSync(pkg.compile, {
-      cwd: dir,
-      stdio: "inherit",
-    });
-  } catch (e: any) {
-    if (e instanceof Error) {
-      console.log("Compile error: " + e.message);
-    }
-  }
-  console.log("Compiled.");
-}
-if (pkg.run) {
-  console.log(" - Run cmd:\t" + pkg.run);
-  try {
-    execSync(pkg.run, {
-      cwd: dir,
-      stdio: "inherit",
-    });
-  } catch (e: any) {
-    if (e instanceof Error) {
-      console.log("Run error: " + e.message);
-    }
-  }
-}
-
-interface PackageInfo {
-  class?: string;
-  compile?: string;
-  run?: string;
-}
-interface Info {
-  classes: ({
-    name: string;
-  } & PackageInfo)[];
-  packages: ({
-    name: string;
-    path: string;
-  } & PackageInfo)[];
-}
-function getInfo(): Info {
-  return JSON.parse(fs.readFileSync("../project.info.json").toString());
-}
-function resolveClasses(info: Info) {
-  let classes: {
-    [key: string]: typeof info.classes[any];
-  } = {};
-  for (let c of info.classes) {
-    classes[c.name] = c;
-  }
-  for (let p of info.packages) {
-    if (p.class) {
-      p.class.split(" ").forEach((v) => {
-        const c = classes[v];
-        for (let k in c) {
-          if (!(k in p)) {
-            p[k as keyof PackageInfo] = c[k as keyof PackageInfo];
+export default (cmd: Command) => {
+  cmd
+    .command("run <type> <package...>")
+    .description("Run a command in the specified package(s).")
+    .option("-f, --file <path>", "File in the package to run")
+    .action(
+      (type: string, packages: string[], options: Option, command: Command) => {
+        const [baseDir, packageInfos] = P.parseInfo(packages, command);
+        packageInfos.forEach((pkg) => {
+          console.log(`\u2139 INFO: start running in package "${pkg.name}".`);
+          const runner = pkg.runners[type];
+          if (!runner) {
+            throw new Error(`Cannot find runner "${type}"`);
           }
-        }
+          runner.forEach((command) =>
+            runCommand(command, pkg.path, pkg.commands)
+          );
+        });
+      }
+    );
+};
+
+function runCommand(
+  commandName: string,
+  dir: string,
+  commands: P.PackageCommands
+) {
+  const command = commands[commandName.trim()];
+  if (command) {
+    console.log(`▶ RUN: command "${commandName}" > ${command}`);
+    // console.log();
+    console.log("."+"-".repeat(5)+" OUTPUTS "+"-".repeat(6));
+    try {
+      execSync(command, {
+        cwd: dir,
+        stdio: "inherit",
       });
+    } catch (e: any) {
+      if (e instanceof Error) {
+        console.log("Execute command error: " + e.message);
+      }
     }
+    console.log("`"+"-".repeat(20));
+    // console.log();
+    console.log(`✔ FINISHED: running command "${commandName}"`);
+  } else {
+    console.log(`⬇ SKIP: running command "${commandName}".`)
   }
 }

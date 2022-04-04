@@ -4,7 +4,8 @@
     "core/**",
     "project/roadmap",
     "utils/**",
-    "utty/**"
+    "utty/**",
+    "scripts"
   ],
   "version": "0.0.0"
 }
