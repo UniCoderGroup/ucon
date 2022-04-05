@@ -1,8 +1,9 @@
 {
-  "extends": "../tsconfig.json",
-  "include": ["src", "dist/run.ts"],
-  "compilerOptions": {
-    "outDir": "./dist",
-    "resolveJsonModule": true
-  }
+  "extends": "../tsconfig_base.json",
+  "files": [],
+  "references": [
+    {
+      "path": "./src"
+    }
+  ]
 }

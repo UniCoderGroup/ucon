@@ -1,4 +1,4 @@
-import UTty, { LineContent, LineContext, UTtyConfig } from "utty";
+import UTty, { LineContent,  UTtyConfig } from "utty";
 import stripAnsi from "strip-ansi";
 import NodeLikeTty, { Direction } from "nodeliketty";
 import chalk, { Color, ChalkInstance } from "chalk";

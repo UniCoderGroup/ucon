@@ -1,9 +1,24 @@
 {
   "classes": {
+    "jest": {
+      "commands": {
+        "test": {
+          "runAt": "<CurrentProject>",
+          "commands": [
+            "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --roots <CurrentPackage>/dist-test/",
+            "echo Hello world!"
+          ]
+        }
+      }
+    },
     "ts": {
       "commands": {
-        "compile": "tsc",
-        "build": "tsc"
+        "compile": "tsc --build",
+        "build": "tsc --build",
+        "compile:test": "tsc --build __tests__"
+      },
+      "runners": {
+        "test": ["compile:test", "test"]
       }
     },
     "react": {
@@ -44,6 +59,18 @@
     },
     "utty": {
       "path": "./utty/utty",
+      "class": "ts"
+    },
+    "utty-node": {
+      "path": "./utty/utty-node/utty-node",
+      "class": "ts jest"
+    },
+    "nodeliketty": {
+      "path": "./utty/utty-node/nodeliketty",
+      "class": "ts"
+    },
+    "nodeliketty-testimpl": {
+      "path": "./utty/utty-node/nodeliketty-testimpl",
       "class": "ts"
     }
   }

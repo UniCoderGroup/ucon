@@ -1,12 +1,9 @@
 export default class TestImpl {
-    constructor() {
-        this.lines = [""];
-        this.y = 0;
-        this.x = 0;
-        this.resizeListeners = [];
-        this._columns = 100;
-        this._rows = 100;
-    }
+    lines = [""];
+    y = 0;
+    x = 0;
+    resizeListeners = [];
+    _columns = 100;
     get columns() {
         return this._columns;
     }
@@ -14,6 +11,7 @@ export default class TestImpl {
         this._columns = col;
         this.callResizeListener();
     }
+    _rows = 100;
     get rows() {
         return this._rows;
     }
@@ -62,3 +60,4 @@ export default class TestImpl {
         return true;
     }
 }
+//# sourceMappingURL=nodeliketty-testimpl.js.map

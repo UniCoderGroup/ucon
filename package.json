@@ -7,32 +7,17 @@
     "url": "https://github.com/UniCoderGroup/ucon/issues"
   },
   "scripts": {
-    "test": "cross-env NODE_OPTIONS=\"--experimental-vm-modules\" jest --coverage",
     "build": "tsc -b"
   },
   "funding": "https://github.com/UniCoderGroup/ucon?sponsor=1",
   "homepage": "https://github.com/UniCoderGroup/ucon#readme",
   "devDependencies": {
-    "lerna": "^4.0.0",
+    "@types/jest": "^27.4.1",
     "cross-env": "^7.0.3",
     "jest": "27.5.1",
+    "lerna": "^4.0.0",
+    "ts-jest": "^27.1.4",
+    "ts-node": "^10.7.0",
     "typescript": "4.6.3"
-  },
-  "jest": {
-    "extensionsToTreatAsEsm": [
-      ".ts"
-    ],
-    "roots": [
-      "<rootDir>/components/",
-      "<rootDir>/core/",
-      "<rootDir>/project/roadmap",
-      "<rootDir>/utils/",
-      "<rootDir>/utty/"
-    ],
-    "moduleNameMapper": {
-      "chalk": "chalk/source/index.js",
-      "#ansi-styles": "chalk/source/vendor/ansi-styles/index.js",
-      "#supports-color": "chalk/source/vendor/supports-color/index.js"
-    }
   }
 }

@@ -1,0 +1,20 @@
+{
+  "extends": "../tsconfig_base.json",
+  "compilerOptions": {
+    "outDir": "../dist-test",
+    "rootDir": ".",
+    "types": ["jest"],
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
+  },
+  "references": [
+    {
+      "path": "../src"
+    },
+    {
+      "path": "../../nodeliketty-testimpl"
+    }
+  ]
+}

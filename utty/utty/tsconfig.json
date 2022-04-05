@@ -1,8 +1,9 @@
 {
-  "extends": "../../tsconfig.json",
-  "include": ["src"],
-  "exclude": ["__tests__"],
-  "compilerOptions": {
-    "outDir": "./dist"
-  }
+  "extends": "../tsconfig_base.json",
+  "files": [],
+  "references": [
+    {
+      "path": "./src"
+    }
+  ]
 }

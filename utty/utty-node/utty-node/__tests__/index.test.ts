@@ -1,4 +1,4 @@
-import UNodeTty from "../src/index";
+import UNodeTty from "../";
 import TestImpl from "nodeliketty-testimpl";
 import chalk from "chalk";
 
@@ -9,7 +9,7 @@ let lines: string[] = [];
 describe("Test UNodeTty", () => {
   it("should be able to push line correctly", () => {
     for (let i = 0; i < 10; i++) {
-      t.pushLine("L" + i);
+      t.pushLine(["L" + i, {}]);
     }
     for (let i = 0; i < 10; i++) {
       lines.push("L" + i);
@@ -18,7 +18,7 @@ describe("Test UNodeTty", () => {
     expect(fake.lines).toEqual(lines);
   });
   it("should be able to replace line correctly", () => {
-    t.replace(3, "L3-new");
+    t.replace(3, ["L3-new", {}]);
     lines[3] = "L3-new";
     expect(fake.lines).toEqual(lines);
   });
@@ -58,7 +58,7 @@ describe("Test UNodeTty", () => {
     expect(called).toBeTruthy();
   });
   it("should be able to calculate the display width of an ansi-styled string", () => {
-    const str = "ANSI-STYLED STRING";
+    const str = "STRING TO BE ANSI-STYLED";
     expect(t.getStrDisplayWidth(chalk.bgBlue.italic(str))).toBe(str.length);
   });
   it("should be able to move to a line", () => {

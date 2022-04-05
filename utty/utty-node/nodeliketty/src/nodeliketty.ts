@@ -1,5 +1,5 @@
 import { Direction } from "node:tty";
-export { Direction };
+export type { Direction };
 export default interface NodeLikeTty {
   /**
    * A `number` specifying the number of columns the TTY currently has. This property

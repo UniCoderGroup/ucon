@@ -10,7 +10,9 @@
   "homepage": "https://github.com/UniCoderGroup/ucon/tree/main/packages/nodeliketty-testimpl#readme",
   "license": "ISC",
   "main": "dist/nodeliketty-testimpl.js",
-  "module": "dist/nodeliketty-testimpl.module.js",
+  "types": "dist/nodeliketty-testimpl.d.js",
+  "module": "dist/nodeliketty-testimpl.js",
+  "type": "module",
   "directories": {
     "lib": "dist",
     "test": "__tests__"

@@ -1,0 +1,18 @@
+{
+  "extends": "../tsconfig_base.json",
+  "compilerOptions": {
+    "outDir": "../dist",
+    "rootDir": "."
+  },
+  "references": [
+    {
+      "path": "../../../utty"
+    },
+    {
+      "path": "../../nodeliketty"
+    },
+    {
+      "path": "../../nodeliketty-testimpl"
+    }
+  ]
+}

@@ -19,3 +19,4 @@ export default class TestImpl implements NodeLikeTty {
     moveCursor(dx: number, dy: number): boolean;
     cursorTo(x: number, y?: number): boolean;
 }
+//# sourceMappingURL=nodeliketty-testimpl.d.ts.map

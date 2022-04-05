@@ -11,7 +11,8 @@
   "license": "ISC",
   "main": "dist/nodeliketty.js",
   "types": "dist/nodeliketty.d.ts",
-  "module": "dist/nodeliketty.module.js",
+  "module": "dist/nodeliketty.js",
+  "type": "module",
   "directories": {
     "lib": "dist",
     "test": "__tests__"
@@ -27,8 +28,7 @@
     "url": "git+https://github.com/UniCoderGroup/ucon.git"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1",
-    "build": "tsc"
+    "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {
     "url": "https://github.com/UniCoderGroup/ucon/issues"

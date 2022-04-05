@@ -3,8 +3,18 @@ import * as path from "path";
 import { Command } from "commander";
 import _ from "lodash";
 
+export type PackageCommand =
+  | string
+  | string[]
+  | {
+      /**
+       * @default "<CurrentPackage>"
+       */
+      runAt?: string;
+      commands: string | string[];
+    };
 export interface PackageCommands {
-  [name: string]: string;
+  [name: string]: PackageCommand;
 }
 export interface PackageRunners {
   [name: string]: string[];

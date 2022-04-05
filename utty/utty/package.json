@@ -11,7 +11,9 @@
   "homepage": "https://github.com/UniCoderGroup/ucon/tree/main/packages/utty#readme",
   "license": "ISC",
   "main": "dist/utty.js",
-  "module": "dist/utty.module.js",
+  "types": "dist/utty.d.ts",
+  "module": "dist/utty.js",
+  "type": "module",
   "directories": {
     "lib": "dist",
     "test": "__tests__"
