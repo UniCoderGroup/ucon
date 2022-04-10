@@ -1,4 +1,4 @@
-class Canvas {
+export default class Canvas {
   constructor(parent: Canvas | null, x: number, y: number) {
     this.parent = parent;
     this.x = x;

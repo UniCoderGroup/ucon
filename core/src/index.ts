@@ -1,14 +1,18 @@
-export * from "./global";
-export * from "./line";
-export * from "./ucon";
+export * from "./global.js";
+export * from "./line.js";
+export * from "./ucon.js";
 export * from "utty";
-export * from "./component";
-export * from "./std_components";
+export * from "./component.js";
+export * from "./std_components.js";
 
-import { stdout } from "node:process";
-import UNodeTty from "utty-node";
-import UCon from "./ucon";
+import UCon from "./ucon.js";
+export default UCon;
 
-const ucon = new UCon(new UNodeTty(stdout));
-export default ucon;
-export { UCon };
+var default_ucon_value: UCon;
+
+export function get_default_ucon() {
+  return default_ucon_value;
+}
+export function set_default_ucon(value: UCon) {
+  default_ucon_value = value;
+}

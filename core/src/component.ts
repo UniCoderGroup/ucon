@@ -1,9 +1,9 @@
-import { ConForBlock, ConForContainer, ConForInline } from "./ucon";
-import { Line, Midware, RefMidware } from "./line";
-import { combiner, inlStr } from "./std_components/inline";
-import ucon, { ConForInput, ContentsArgs } from "./index";
+import { ConForBlock, ConForContainer, ConForInline } from "./ucon.js";
+import { Line, Midware, RefMidware } from "./line.js";
+import { combiner, inlStr } from "./std_components.js";
+import { ConForInput, ContentsArgs, get_default_ucon } from "./index.js";
 import _ from "lodash";
-import { FocusMoveArgs, FocusMoveResult } from "./focus";
+import { FocusMoveArgs, FocusMoveResult } from "./focus.js";
 
 /**
  * The base class of all the components.
@@ -71,7 +71,7 @@ export abstract class BlockComponent<P = unknown> extends Component<
   P,
   ConForBlock
 > {
-  constructor(props: P, con: ConForBlock = ucon) {
+  constructor(props: P, con: ConForBlock = get_default_ucon()) {
     super(props, con);
   }
 
@@ -152,7 +152,7 @@ export abstract class ContainerComponent<
   BA extends Array<unknown> = unknown[],
   EA extends Array<unknown> = unknown[]
 > extends Component<P, ConForContainer> {
-  constructor(props: P, con: ConForContainer = ucon) {
+  constructor(props: P, con: ConForContainer = get_default_ucon()) {
     super(props, con);
   }
 
@@ -228,7 +228,7 @@ export abstract class InlineComponent<P = unknown> extends Component<
   P,
   ConForInline
 > {
-  constructor(props: P, con: ConForInline = ucon) {
+  constructor(props: P, con: ConForInline = get_default_ucon()) {
     super(props, con);
   }
 
@@ -248,7 +248,7 @@ export abstract class InputComponent<
   P = unknown,
   InnerPos = unknown
 > extends Component<P, ConForInput> {
-  constructor(props: P, con: ConForInput = ucon) {
+  constructor(props: P, con: ConForInput = get_default_ucon()) {
     super(props, con);
   }
 

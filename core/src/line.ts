@@ -1,5 +1,5 @@
-import { InlineComponent } from "./component";
-import { ContainerStack } from "./ucon";
+import { InlineComponent } from "./component.js";
+import { ContainerStack } from "./ucon.js";
 import { LineContext, LineContent } from "utty";
 
 export type MidwareContext = LineContext & {

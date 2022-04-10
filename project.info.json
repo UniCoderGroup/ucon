@@ -11,19 +11,31 @@
         }
       }
     },
+    "dev": {
+      "commands": {
+        "node:dev": {
+          "runAt": "<CurrentPackage>",
+          "commands": "node --experimental-vm-modules dist-dev/index.js"
+        }
+      },
+      "runners": {
+        "start": ["compile:dev", "node:dev"]
+      }
+    },
     "ts": {
       "commands": {
         "compile": "tsc --build",
         "build": "tsc --build",
-        "compile:test": "tsc --build __tests__"
+        "compile:test": "tsc --build __tests__",
+        "compile:dev": "tsc --build __dev__"
       },
       "runners": {
-        "test": ["compile:test", "test"]
+        "test": ["compile:test", "test"],
+        "build": ["build"]
       }
     },
     "react": {
       "commands": {
-        "compile": null,
         "start": "npx react-scripts start",
         "build": "npx react-scripts build"
       }
@@ -32,7 +44,7 @@
   "packages": {
     "core": {
       "path": "./core",
-      "class": "ts"
+      "class": "ts dev"
     },
     "roadmap": {
       "path": "./project/roadmap",
@@ -48,6 +60,10 @@
     "focus-system": {
       "path": "./utils/focus-system",
       "class": "react"
+    },
+    "logger-to-browser-api": {
+      "path": "./utils/logger-to-browser/logger-to-browser-api",
+      "class": "ts dev"
     },
     "range-set": {
       "path": "./utils/range-set",

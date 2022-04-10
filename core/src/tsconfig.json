@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig_base.json",
+  "compilerOptions": {
+    "outDir": "../dist",
+    "rootDir": "."
+  },
+  "references": [
+    {
+      "path": "../../utty/utty"
+    }
+  ]
+}

@@ -5,12 +5,12 @@ import {
   ContainerEA,
   Component,
   InputComponent,
-} from "./component";
+} from "./component.js";
 import UTty from "utty";
-import { Line, createLine, Midware, RefMidware } from "./line";
-import { combiner } from "./std_components/inline";
-import { ContentsArgs } from "./global";
-import { FocusTarget } from "./focus";
+import { Line, createLine, Midware, RefMidware } from "./line.js";
+import { combiner } from "./std_components.js";
+import { ContentsArgs } from "./global.js";
+import { FocusTarget } from "./focus.js";
 import { InputIP } from ".";
 
 export type ContainerStack = ContainerComponent[];

@@ -9,6 +9,9 @@
 **/coverage
 **/dist-test
 
+# developing
+**/dist-dev
+
 # production
 **/build
 **/dist

@@ -1,4 +1,4 @@
-import { InputComponent } from "./component";
+import { InputComponent } from "./component.js";
 
 export type FocusTarget = InputComponent;
 

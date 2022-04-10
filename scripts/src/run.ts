@@ -76,7 +76,7 @@ function runCommand(
     for (let i in cmds) {
       const cmd = cmds[i];
       try {
-        console.log(`▶▶ RUN: subcommand#${i + 1} > ${cmd}`);
+        console.log(`▶ ${commandName} ▶ RUN: subcommand#${i + 1} > ${cmd}`);
         console.log("." + "-".repeat(5) + " OUTPUTS " + "-".repeat(6));
         execSync(cmd, {
           cwd: runAt,
@@ -87,8 +87,8 @@ function runCommand(
           console.log("Execute command error: " + e.message);
         }
       }
+      console.log("`" + "-".repeat(20));
     }
-    console.log("`" + "-".repeat(20));
     console.log(`✔ FINISHED: running command "${commandName}"`);
   } else {
     console.log(`⬇ SKIP: running command "${commandName}".`);
