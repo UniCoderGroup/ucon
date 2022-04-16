@@ -1,0 +1,7 @@
+{
+  "name": "log-to-console-server",
+  "version": "0.0.0",
+  "dependencies": {
+    "socket.io": "^4.4.1"
+  }
+}

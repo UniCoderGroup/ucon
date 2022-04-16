@@ -12,6 +12,7 @@ import { combiner } from "./std_components.js";
 import { ContentsArgs } from "./global.js";
 import { FocusTarget } from "./focus.js";
 import { InputIP } from ".";
+import { __dev_logger } from "./_development.js";
 
 export type ContainerStack = ContainerComponent[];
 
@@ -39,7 +40,7 @@ export type ConForInline = ConWithUTty;
 
 export interface ConForInput extends ConWithUTty {
   focus: FocusTarget | null;
-  getFocusInnerPos(focus: FocusTarget): InputIP<FocusTarget>|undefined;
+  getFocusInnerPos(focus: FocusTarget): InputIP<FocusTarget> | undefined;
 }
 
 /**
@@ -71,13 +72,13 @@ export default class UCon
    * Focus of inputing.
    */
   focus: FocusTarget | null = null;
-  protected focusInnerPos: InputIP<FocusTarget>|undefined;
+  protected focusInnerPos: InputIP<FocusTarget> | undefined;
 
   get lineNum(): number {
     return this.lines.length;
   }
 
-  getFocusInnerPos(focus: FocusTarget): InputIP<FocusTarget>|undefined {
+  getFocusInnerPos(focus: FocusTarget): InputIP<FocusTarget> | undefined {
     if (this.focus === focus) {
       return this.focusInnerPos;
     } else {
@@ -131,7 +132,18 @@ export default class UCon
     const currentLine = createLine(this.stack, content);
     currentLine.y = this.lineNum;
     this.lines.push(currentLine);
-    this.tty.replace(currentLine.y, currentLine.render());
+    __dev_logger.log("tty.replace at", currentLine.y, currentLine.render());
+    __dev_logger.log(
+      "  now lines are",
+      this.lines.map((v) => {
+        return {
+          rendered: v.render(),
+          y: v.y,
+        };
+      })
+    );
+    __dev_logger.log("  now tty line is", (this.tty as any).line);
+    this.tty.pushLine(currentLine.render());
     return currentLine;
   }
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Logger to browser</title>
+    <title>Receiver | Log to browser</title>
     <style>
       .block {
         position: relative;
@@ -56,7 +56,7 @@
     <script>
       var socket = io();
 
-      socket.on("log message", function (msg) {
+      function log(msg){
         function transitionJsonToString(jsonObj, callback) {
           var _jsonObj = null;
           if (Object.prototype.toString.call(jsonObj) !== "[object String]") {
@@ -161,8 +161,16 @@
         d.appendChild(t);
         item.appendChild(d);
         messages.appendChild(item);
+      }
+      socket.on("log", function (msg) {
+        log(msg);
       });
-
+      socket.on("warn", function (msg) {
+        log(msg);
+      });
+      socket.on("error", function (msg) {
+        log(msg);
+      });
       socket.on("attach", function (name) {
         var info = document.getElementById("processinfo");
         info.textContent = `Process "${name}" attached.`;

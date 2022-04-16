@@ -5,5 +5,7 @@ dl.attach("http://localhost:3000/");
 console.log("Attached!");
 
 dl.log("abc", { abc: 123 });
+dl.warn("abc", { abc: 123 });
+dl.error("abc", { abc: 123 });
 
 setTimeout(() => dl.detach(), 3000);

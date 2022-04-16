@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 
-export class BrowserLogger {
+export class Logger {
   constructor(name: string = "Unnamed") {
     this.name = name;
   }
@@ -24,9 +24,19 @@ export class BrowserLogger {
   log(...objs: any[]) {
     let str = JSON.stringify(objs);
     if (!this.socket) throw new Error("Please attech log server!");
-    this.socket.emit("log message", str);
+    this.socket.emit("log", str);
+  }
+  warn(...objs: any[]) {
+    let str = JSON.stringify(objs);
+    if (!this.socket) throw new Error("Please attech log server!");
+    this.socket.emit("warn", str);
+  }
+  error(...objs: any[]) {
+    let str = JSON.stringify(objs);
+    if (!this.socket) throw new Error("Please attech log server!");
+    this.socket.emit("error", str);
   }
 }
 
-var debug_logger = new BrowserLogger();
+var debug_logger = new Logger();
 export default debug_logger;

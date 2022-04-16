@@ -61,8 +61,8 @@
       "path": "./utils/focus-system",
       "class": "react"
     },
-    "logger-to-browser-api": {
-      "path": "./utils/logger-to-browser/logger-to-browser-api",
+    "log-to-sth-api": {
+      "path": "./utils/log-to-sth/log-to-sth-api",
       "class": "ts dev"
     },
     "range-set": {

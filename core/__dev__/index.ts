@@ -7,18 +7,29 @@ import UCon, {
   symbolIcon,
   Text,
   set_default_ucon,
+  Table,
 } from "../dist/index.js";
+import { __dev_logger } from "../dist/_development.js";
+
+__dev_logger.attach("http://localhost:3000/");
+
+process.env.__dev_logger = __dev_logger as unknown as string;
 
 import { stdout } from "node:process";
 import UNodeTty from "utty-node";
+import NodeLikeTtyTestImpl from "nodeliketty-testimpl";
+const ti = new NodeLikeTtyTestImpl();
 const ucon = new UCon(new UNodeTty(stdout));
 set_default_ucon(ucon);
 
-ucon.log("1");
-ucon.log("2");
-ucon.log("3");
+const p1 = new ProgressBar({ width: 20, name: "Processing1",fractionDigits:3 });
+p1.mount();
+setTimeout(()=>p1.progress(0.33333334),1000);
+setTimeout(()=>p1.progress(0.33333334),2000);
+setTimeout(()=>p1.progress(0.33333334),3000);
+ucon.log("111111111111111");
 
-
+__dev_logger.log("TestImpl got: ",ti.lines)
 // let timeBegin = process.uptime();
 // let group = new GroupBox({});
 // group.begin("Process Request ", chalkjs(chalk.blueBright, "#3"));
@@ -155,3 +166,5 @@ ucon.log("3");
 // let x:FF = t;
 
 // x(1);
+
+setTimeout(() => __dev_logger.detach(), 2000);
