@@ -11,6 +11,8 @@ import UCon, {
 } from "../dist/index.js";
 import { __dev_logger } from "../dist/_development.js";
 
+import fs from "fs";
+
 __dev_logger.attach("http://localhost:3000/");
 
 process.env.__dev_logger = __dev_logger as unknown as string;
@@ -19,17 +21,27 @@ import { stdout } from "node:process";
 import UNodeTty from "utty-node";
 import NodeLikeTtyTestImpl from "nodeliketty-testimpl";
 const ti = new NodeLikeTtyTestImpl();
-const ucon = new UCon(new UNodeTty(stdout));
+const ucon = new UCon(new UNodeTty(ti));
 set_default_ucon(ucon);
 
-const p1 = new ProgressBar({ width: 20, name: "Processing1",fractionDigits:3 });
+const p1 = new ProgressBar({
+  width: 20,
+  name: "Processing1",
+  fractionDigits: 3,
+});
 p1.mount();
-setTimeout(()=>p1.progress(0.33333334),1000);
-setTimeout(()=>p1.progress(0.33333334),2000);
-setTimeout(()=>p1.progress(0.33333334),3000);
+setTimeout(() => p1.progress(0.33333334), 1000);
+setTimeout(() => p1.progress(0.33333334), 2000);
+setTimeout(() => {
+  p1.progress(0.33333334);
+  __dev_logger.log("TestImpl got: ", ti.lines);
+  __dev_logger.log("TestImpl.operateHistory: ", ti.operateHistory.join("\n"));
+  fs.writeFileSync("C:/Users/HONOR/Desktop/ucon-operatehistory.txt", ti.operateHistory.join("\r\n"));
+  setTimeout(() => __dev_logger.detach(), 2000);
+}, 3000);
 ucon.log("111111111111111");
 
-__dev_logger.log("TestImpl got: ",ti.lines)
+
 // let timeBegin = process.uptime();
 // let group = new GroupBox({});
 // group.begin("Process Request ", chalkjs(chalk.blueBright, "#3"));
@@ -166,5 +178,3 @@ __dev_logger.log("TestImpl got: ",ti.lines)
 // let x:FF = t;
 
 // x(1);
-
-setTimeout(() => __dev_logger.detach(), 2000);

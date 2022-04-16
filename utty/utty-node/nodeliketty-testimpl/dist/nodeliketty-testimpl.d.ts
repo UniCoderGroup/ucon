@@ -2,10 +2,15 @@
 import NodeLikeTty, { Direction } from "nodeliketty";
 export default class TestImpl implements NodeLikeTty {
     lines: string[];
+    operateHistory: string[];
+    operateHistoryBlanks: number;
     y: number;
     x: number;
     resizeListeners: (() => void)[];
     private _columns;
+    opPush(str: any): void;
+    opStartFunc(name: string, ...args: any[]): void;
+    opEndFunc(retVal?: any): void;
     get columns(): number;
     set columns(col: number);
     private _rows;
