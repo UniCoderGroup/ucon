@@ -72,7 +72,7 @@ export default class UNodeTty implements UTty {
 
   /**
    * Get the number of lines of `str`.
-   * It returns `1` when `str` has no `\n`.
+   * It will return `1` if `str` has no `\n`.
    */
   protected _getLineNum(str: string): number {
     let lines = 1;
