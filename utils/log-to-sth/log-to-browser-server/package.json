@@ -2,8 +2,8 @@
   "name": "log-to-browser-server",
   "version": "0.0.0",
   "dependencies": {
-    "better-opn": "^3.0.2",
-    "express": "^4.17.3",
+    "better-opn": "3.0.2",
+    "express": "4.17.3",
     "socket.io": "4.4.1"
   }
 }
