@@ -6,8 +6,7 @@
     "types": ["jest"],
     "composite": false,
     "declaration": false,
-    "declarationMap": false,
-    "sourceMap": false
+    "declarationMap": false
   },
   "references": [
     {
