@@ -93,6 +93,7 @@ export default class UNodeTty implements UTty {
 
   protected _clearLine(dir: Direction = 0): void {
     this.tty.clearLine(dir);
+    this._toChar(0);
   }
 
   protected _replace(str: string): void {

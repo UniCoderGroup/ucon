@@ -23,9 +23,11 @@ describe("Test UNodeTty", () => {
     expect(fake.lines).toEqual(lines);
   });
   it("should be able to clear line correctly", () => {
+    expect(fake.x === 0).toBeFalsy();
     t.clearLine(4);
     lines[4] = "";
     expect(fake.lines).toEqual(lines);
+    expect(fake.x).toBe(0);
   });
   it("should be able to pop a line correctly", () => {
     t.popLine();

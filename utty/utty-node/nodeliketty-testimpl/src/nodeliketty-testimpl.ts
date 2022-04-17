@@ -90,8 +90,9 @@ export default class TestImpl implements NodeLikeTty {
     this.opStartFunc("clearLine", dir);
     this.lines[this.y] = "";
     this.opPush(`this.lines[${this.y}] = \"\";\t=>${this.lines.join(" | ")}`);
-    this.x = 0;
-    this.opPush("this.x = 0;");
+    // [[IMPORTANT]] Currently, we found that nodejs doesn't move x coord when clearing a line.
+    // this.x = 0;
+    // this.opPush("this.x = 0;");
     this.opEndFunc(true);
     return true;
   }
