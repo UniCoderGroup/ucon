@@ -128,6 +128,7 @@ export default class UNodeTty implements UTty {
 
   protected _toNewLine(): void {
     this._toLine(this.nLine);
+    this._toChar(0);
   }
 
   protected _resolve(content: LineContent): string {

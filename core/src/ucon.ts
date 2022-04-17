@@ -99,7 +99,7 @@ export default class UCon
    */
   insertLine(y: number, line: Line): void {
     line.y = y;
-    this.lines.push(this.lines[this.lines.length - 1]);
+    this.pushLine(this.lines[this.lines.length - 1]);
     for (let i = this.lines.length - 1; i > y; i--) {
       this.lines[i] = this.lines[i - 1];
       this.lines[i].y++;
@@ -131,8 +131,12 @@ export default class UCon
   addLine(content: InlineComponent): Line {
     const currentLine = createLine(this.stack, content);
     currentLine.y = this.lineNum;
-    this.lines.push(currentLine);
-    __dev_logger.log("tty.replace at", currentLine.y, currentLine.render());
+    this.pushLine(currentLine);
+    return currentLine;
+  }
+
+  pushLine(line:Line){
+    this.lines.push(line);
     __dev_logger.log(
       "  now lines are",
       this.lines.map((v) => {
@@ -143,8 +147,7 @@ export default class UCon
       })
     );
     __dev_logger.log("  now tty line is", (this.tty as any).line);
-    this.tty.pushLine(currentLine.render());
-    return currentLine;
+    this.tty.pushLine(line.render());
   }
 
   getMidware(ref: RefMidware): Midware {
