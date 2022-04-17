@@ -5,8 +5,7 @@
         "test": {
           "runAt": "<CurrentProject>",
           "commands": [
-            "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --roots <CurrentPackage>/dist-test/",
-            "echo Hello world!"
+            "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --roots <CurrentPackage>/dist-test/"
           ]
         }
       }
