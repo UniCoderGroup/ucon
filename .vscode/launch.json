@@ -15,6 +15,12 @@
                 "--runInBand",
                 "--watchAll=false"
             ]
+        },
+        {
+            "type": "node-terminal",
+            "name": "JavaScript Debug Terminal",
+            "request": "launch",
+            "cwd": "${workspaceFolder}"
         }
     ]
 }
