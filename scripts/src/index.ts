@@ -6,7 +6,7 @@ program
   .name("monocli")
   .version("0.0.0")
   .option(
-    "-p, --project <project-info-file-path> <p2>",
+    "-p, --project <project-info-file-path>",
     "Specific project info file."
   );
 

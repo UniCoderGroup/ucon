@@ -1,31 +1,37 @@
-import { Argument, Command, Option } from "commander";
+import { Argument, Command, Option, OptionValues } from "commander";
 import * as P from "./project.js";
 import { execSync } from "child_process";
 import _ from "lodash";
+
+function logOptOnly(isOptOnly:boolean,...args:any[]){
+  if(!isOptOnly)return console.log(...args);
+}
 
 export default (cmd: Command) => {
   cmd
     .command("run <type> <package...>")
     .description("Run a command in the specified package(s).")
-    .option("-f, --file <path>", "File in the package to run")
+    // .option("-f, --file <path>", "File in the package to run")
+    .option("-o, --opt-only","Only print outputs of commands")
     .action(
-      (type: string, packages: string[], options: Option, command: Command) => {
+      (type: string, packages: string[], options: OptionValues, command: Command) => {
         const [projectPath, packageInfos] = P.parseInfo(packages, command);
+        const optOnly:boolean = options.optOnly;
         packageInfos.forEach((pkg) => {
           const runner = pkg.runners[type];
           if (!runner) {
             throw new Error(`Cannot find runner "${type}"`);
           }
-          console.log(
+          logOptOnly(optOnly,
             `\u2139 INFO: start running "${type}" in package "${pkg.name}".`
           );
-          console.log(
+          logOptOnly(optOnly,
             `\u2139 INFO: runner will run these commands: `,
             runner,
             `.`
           );
           runner.forEach((command) =>
-            runCommand(command, pkg.commands, pkg.path, projectPath)
+            runCommand(command, pkg.commands, pkg.path, projectPath,optOnly)
           );
         });
       }
@@ -36,7 +42,8 @@ function runCommand(
   commandName: string,
   commands: P.PackageCommands,
   packagePath: string,
-  projectPath: string
+  projectPath: string,
+  optOnly:boolean
 ) {
   let command = commands[commandName.trim()];
   if (command) {
@@ -69,28 +76,28 @@ function runCommand(
     cmds = cmds!.map(replacer);
     runAt = replacer(runAt);
 
-    console.log(
+     logOptOnly(optOnly,
       `▶ RUN: command "${commandName}" (${cmds.length} subcommands) (run at: "${runAt}")`
     );
 
     for (let i in cmds) {
       const cmd = cmds[i];
       try {
-        console.log(`▶ ${commandName} ▶ RUN: subcommand#${i + 1} > ${cmd}`);
-        console.log("." + "-".repeat(5) + " OUTPUTS " + "-".repeat(6));
+         logOptOnly(optOnly,`▶ ${commandName} ▶ RUN: subcommand#${i + 1} > ${cmd}`);
+         logOptOnly(optOnly,"." + "-".repeat(5) + " OUTPUTS " + "-".repeat(6));
         execSync(cmd, {
           cwd: runAt,
           stdio: "inherit",
         });
       } catch (e: any) {
         if (e instanceof Error) {
-          console.log("Execute command error: " + e.message);
+           logOptOnly(false,"Execute command error: " + e.message);
         }
       }
-      console.log("`" + "-".repeat(20));
+       logOptOnly(optOnly,"`" + "-".repeat(20));
     }
-    console.log(`✔ FINISHED: running command "${commandName}"`);
+     logOptOnly(optOnly,`✔ FINISHED: running command "${commandName}"`);
   } else {
-    console.log(`⬇ SKIP: running command "${commandName}".`);
+     logOptOnly(optOnly,`⬇ SKIP: running command "${commandName}".`);
   }
 }
