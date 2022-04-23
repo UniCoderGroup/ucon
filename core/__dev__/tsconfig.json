@@ -11,6 +11,9 @@
     },
     {
       "path": "../../utty/utty-node/utty-node"
+    },
+    {
+      "path": "../../components"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
-  "name": "ucon",
+  "name": "ucon-components",
   "version": "0.0.0",
-  "description": "A super framework of text-based output with components.",
+  "description": "Official helpful components of ucon.",
   "keywords": [
     "component",
     "ucon"
@@ -33,17 +33,13 @@
   "bugs": {
     "url": "https://github.com/UniCoderGroup/ucon/issues"
   },
-  "devDependencies": {
-    "@types/lodash": "4.14.181",
-    "log-to-sth-api": "^0.0.0",
-    "nodeliketty-testimpl": "^0.0.0",
-    "typescript": "4.6.3",
-    "utty-node": "^0.0.0",
-    "ucon-components": "^0.0.0"
-  },
   "dependencies": {
-    "chalk": "^5.0.0",
+    "chalk": "^5.0.1",
     "lodash": "^4.17.21",
-    "utty": "^0.0.0"
+    "ucon": "^0.0.0"
+  },
+  "devDependencies": {
+    "@types/chalk": "^2.2.0",
+    "@types/lodash": "^4.14.182"
   }
 }
