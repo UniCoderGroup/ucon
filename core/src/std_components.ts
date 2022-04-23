@@ -382,7 +382,7 @@ export class Table<T> extends BlockComponent<TableProps<T>> {
         "|" +
           this.props.cols
             .map((col) => {
-              let str = new String(data[col.key]);
+              let str = _.toString(data[col.key]);
               return align(col.align, col.width, str as string).render() + "|";
             })
             .join(""),
