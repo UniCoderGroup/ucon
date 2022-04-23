@@ -1,4 +1,4 @@
-import UTty, { LineContent,  UTtyConfig } from "utty";
+import UTty, { LineContent, UTtyConfig } from "utty";
 import stripAnsi from "strip-ansi";
 import NodeLikeTty, { Direction } from "nodeliketty";
 import chalk, { Color, ChalkInstance } from "chalk";
@@ -43,7 +43,7 @@ const color2chalk = new Map<Color, ChalkInstance>([
 ]);
 
 /**
- * Only methods whose name starts with `_` operates NodeLikeTty. 
+ * Only methods whose name starts with `_` operates NodeLikeTty.
  */
 export default class UNodeTty implements UTty {
   constructor(tty: NodeLikeTty) {
@@ -188,8 +188,7 @@ export default class UNodeTty implements UTty {
 
   popLine(): void {
     this.nLine--;
-    this._toNewLine();
-    this._clearLine();
+    this.clearLine(this.nLine);
   }
 
   getStrDisplayWidth(str: string): number {
