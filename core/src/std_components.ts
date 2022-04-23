@@ -231,15 +231,9 @@ export class Switcher<
         }
       }
       if (unmount) {
-        if (this.state === 0) {
-          throw new Error("Switcher Logical error!");
-        }
         this.getComp(this.state)!.unmount();
       }
       if (mount) {
-        if (to === 0) {
-          throw new Error("Switcher Logical error!");
-        }
         this.getComp(to)!.mount();
       }
     }
