@@ -91,6 +91,7 @@ export default class UCon
    * @param line Line to redraw
    */
   redraw(line: Line): void {
+    __dev_logger.log(`tty.replace  @${line.y} =>${line.render()}`);
     this.tty.replace(line.y, line.render());
   }
 
@@ -98,9 +99,27 @@ export default class UCon
    * Insert a line.
    */
   insertLine(y: number, line: Line): void {
+    // 0A 1B 2C 3D
+    // (if) A B C D X
+    // push X
+    // OK!
+    // (else) e.g. y=1 todo: A X B C D
+    // X.y = 1
+    // => A B C D D (length = 5)
+    // (loop until i = 1)
+    // i = 3 => A B C C D  & redraw C
+    // i = 2 => A B B C D  & redraw B
+    // i = 1 => (exit loop)
+    //
+    // => A X B C D
+    // redraw X
+    if (y === this.lines.length) {
+      this.pushLine(line);
+      return;
+    }
     line.y = y;
     this.pushLine(this.lines[this.lines.length - 1]);
-    for (let i = this.lines.length - 1; i > y; i--) {
+    for (let i = this.lines.length - 2; i > y; i--) {
       this.lines[i] = this.lines[i - 1];
       this.lines[i].y++;
       this.redraw(this.lines[i]);
@@ -122,6 +141,7 @@ export default class UCon
       this.redraw(this.lines[i - 1]);
     }
     this.lines.pop();
+    __dev_logger.log(`tty.popLine`);
     this.tty.popLine();
   }
 
@@ -130,23 +150,14 @@ export default class UCon
    */
   addLine(content: InlineComponent): Line {
     const currentLine = createLine(this.stack, content);
-    currentLine.y = this.lineNum;
     this.pushLine(currentLine);
     return currentLine;
   }
 
-  pushLine(line:Line){
+  pushLine(line: Line) {
+    line.y = this.lineNum;
     this.lines.push(line);
-    __dev_logger.log(
-      "  now lines are",
-      this.lines.map((v) => {
-        return {
-          rendered: v.render(),
-          y: v.y,
-        };
-      })
-    );
-    __dev_logger.log("  now tty line is", (this.tty as any).line);
+    __dev_logger.log(`tty.pushLine  =>${line.render()}`);
     this.tty.pushLine(line.render());
   }
 

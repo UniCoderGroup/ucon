@@ -36,7 +36,13 @@ export abstract class Component<
    * Init the component.
    */
   init(): void {
-    this.props = _.defaults(this.props, this.defaultProps);
+    if (this.defaultProps) {
+      if (typeof this.props === "object") {
+        this.props = _.defaults(this.props, this.defaultProps);
+      } else {
+        this.props = this.props ?? this.defaultProps;
+      }
+    }
   }
 }
 
