@@ -2,41 +2,43 @@
   "classes": {
     "jest": {
       "commands": {
-        "test": {
-          "runAt": "<CurrentProject>",
+        "tester:test": {
+          "workDir": "<CurrentProject>",
           "commands": [
             "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --roots <CurrentPackage>/dist-test/"
           ]
         }
+      },
+      "workflows": {
+        "test": ["compiler:test", "tester:test"]
       }
     },
     "dev": {
       "commands": {
-        "node:dev": {
-          "runAt": "<CurrentPackage>",
+        "runner:dev": {
+          "workDir": "<CurrentPackage>",
           "commands": "node --experimental-vm-modules dist-dev/index.js"
         }
       },
-      "runners": {
-        "start": ["compile:dev", "node:dev"]
+      "workflows": {
+        "start": ["compiler:dev", "runner:dev"]
       }
     },
     "ts": {
       "commands": {
-        "compile": "tsc --build",
-        "build": "tsc --build",
-        "compile:test": "tsc --build __tests__",
-        "compile:dev": "tsc --build __dev__"
+        "compiler:compile": "tsc --build",
+        "compiler:build": "tsc --build",
+        "compiler:test": "tsc --build __tests__",
+        "compiler:dev": "tsc --build __dev__"
       },
-      "runners": {
-        "test": ["compile:test", "test"],
-        "build": ["build"]
+      "workflows": {
+        "build": ["compiler:build"]
       }
     },
     "react": {
       "commands": {
-        "start": "npx react-scripts start",
-        "build": "npx react-scripts build"
+        "runner:start": "npx react-scripts start",
+        "compiler:build": "npx react-scripts build"
       }
     }
   },

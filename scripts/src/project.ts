@@ -10,27 +10,27 @@ export type PackageCommand =
       /**
        * @default "<CurrentPackage>"
        */
-      runAt?: string;
+      workDir?: string;
       commands: string | string[];
     };
 export interface PackageCommands {
   [name: string]: PackageCommand;
 }
-export interface PackageRunners {
+export interface PackageWorkflows {
   [name: string]: string[];
 }
 export interface PackageClass {
   name: string;
-  commands: PackageCommands;
-  runners: PackageRunners;
+  commands?: PackageCommands;
+  workflows?: PackageWorkflows;
 }
 
 export interface PackageInfo {
-  name?: string;
+  name: string;
   path: string;
   class?: string;
-  commands: PackageCommands;
-  runners: PackageRunners;
+  commands?: PackageCommands;
+  workflows?: PackageWorkflows;
 }
 
 interface ProjectInfo {
@@ -50,7 +50,7 @@ export function readInfo(infoPath: string): ProjectInfo {
 }
 
 export function parseInfo(
-  packages: string[],
+  packages: string[] | ["*"],
   command: Command
 ): [baseDir: string, packageInfos: PackageInfo[]] {
   let project = command.parent?.opts().project;
@@ -69,19 +69,29 @@ export function parseInfo(
   console.log(`\u2139 INFO: project info file: ${project}`);
   let info = readInfo(project);
   let packageInfos: PackageInfo[] = [];
-  packages.forEach((pkgName) => {
-    let packageInfo = info.packages[pkgName];
-    if (packageInfo) {
+  if (packages[0] === "*") {
+    for (let pkgName in info.packages) {
+      let packageInfo = info.packages[pkgName];
       packageInfo = resolveClasses(packageInfo, info.classes);
       resolvePath(packageInfo, baseDir);
-      addDefaultRunners(packageInfo);
+      addDefaultWorkflows(packageInfo);
       addName(packageInfo, pkgName);
       packageInfos.push(packageInfo);
-    } else {
-      console.log(info);
-      throw new Error(`No such package called ${pkgName}`);
     }
-  });
+  } else {
+    packages.forEach((pkgName) => {
+      let packageInfo = info.packages[pkgName];
+      if (packageInfo) {
+        packageInfo = resolveClasses(packageInfo, info.classes);
+        resolvePath(packageInfo, baseDir);
+        addDefaultWorkflows(packageInfo);
+        addName(packageInfo, pkgName);
+        packageInfos.push(packageInfo);
+      } else {
+        throw new Error(`No such package called ${pkgName}`);
+      }
+    });
+  }
   return [baseDir, packageInfos];
 }
 
@@ -101,15 +111,15 @@ function resolvePath(p: PackageInfo, baseDir: string) {
   }
 }
 
-const defaultRunners = {
+const defaultWorkflows = {
   build: ["build"],
   compile: ["compile"],
   start: ["compile", "start"],
   test: ["compile", "test"],
 };
 
-function addDefaultRunners(p: PackageInfo) {
-  p.runners = _.defaults(p.runners, defaultRunners);
+function addDefaultWorkflows(p: PackageInfo) {
+  // p.workflows = _.defaults(p.workflows, defaultWorkflows);
 }
 
 function addName(p: PackageInfo, name: string) {

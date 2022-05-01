@@ -1,10 +1,10 @@
-import { Argument, Command, Option, OptionValues } from "commander";
+import { Command, OptionValues } from "commander";
 import * as P from "./project.js";
 import { execSync } from "child_process";
 import _ from "lodash";
 
-function logOptOnly(isOptOnly:boolean,...args:any[]){
-  if(!isOptOnly)return console.log(...args);
+function logOptOnly(isOptOnly: boolean, ...args: any[]) {
+  if (!isOptOnly) return console.log(...args);
 }
 
 export default (cmd: Command) => {
@@ -12,38 +12,53 @@ export default (cmd: Command) => {
     .command("run <type> <package...>")
     .description("Run a command in the specified package(s).")
     // .option("-f, --file <path>", "File in the package to run")
-    .option("-o, --opt-only","Only print outputs of commands")
-    .action(
-      (type: string, packages: string[], options: OptionValues, command: Command) => {
-        const [projectPath, packageInfos] = P.parseInfo(packages, command);
-        const optOnly:boolean = options.optOnly;
-        packageInfos.forEach((pkg) => {
-          const runner = pkg.runners[type];
-          if (!runner) {
-            throw new Error(`Cannot find runner "${type}"`);
-          }
-          logOptOnly(optOnly,
-            `\u2139 INFO: start running "${type}" in package "${pkg.name}".`
-          );
-          logOptOnly(optOnly,
-            `\u2139 INFO: runner will run these commands: `,
-            runner,
-            `.`
-          );
-          runner.forEach((command) =>
-            runCommand(command, pkg.commands, pkg.path, projectPath,optOnly)
-          );
-        });
-      }
-    );
+    .option("-o, --opt-only", "Only print outputs of commands")
+    .action(action);
 };
+
+function action(
+  type: string,
+  packages: string[],
+  options: OptionValues,
+  command: Command
+) {
+  const [projectPath, packageInfos] = P.parseInfo(packages, command);
+  const optOnly: boolean = options.optOnly;
+  packageInfos.forEach((pkg) => {
+    if (_.isUndefined(pkg.workflows)) {
+      logOptOnly(optOnly, `⬇ SKIP: no workflows in package "${pkg.name}".`);
+      return;
+    }
+    const workflow = pkg.workflows[type];
+    if (_.isUndefined(workflow)) {
+      logOptOnly(
+        optOnly,
+        `⬇ SKIP: no workflow "${type}" in package "${pkg.name}".`
+      );
+      return;
+    }
+    logOptOnly(
+      optOnly,
+      `\u2139 INFO: start running workflow "${type}" in package "${pkg.name}".`
+    );
+    logOptOnly(
+      optOnly,
+      `\u2139 INFO: workflow will run these commands: `,
+      workflow,
+      `.`
+    );
+    workflow.forEach((command) =>
+      runCommand(command, pkg.commands ?? {}, pkg.path, projectPath, optOnly)
+    );
+  });
+}
 
 function runCommand(
   commandName: string,
   commands: P.PackageCommands,
   packagePath: string,
   projectPath: string,
-  optOnly:boolean
+  optOnly: boolean
 ) {
   let command = commands[commandName.trim()];
   if (command) {
@@ -54,7 +69,7 @@ function runCommand(
     } else if (_.isArray(command)) {
       cmds = command;
     } else if (_.isObject(command)) {
-      runAt = command.runAt ?? "<CurrentPackage>";
+      runAt = command.workDir ?? "<CurrentPackage>";
       if (_.isString(command.commands)) {
         cmds = [command.commands];
       } else {
@@ -76,28 +91,32 @@ function runCommand(
     cmds = cmds!.map(replacer);
     runAt = replacer(runAt);
 
-     logOptOnly(optOnly,
+    logOptOnly(
+      optOnly,
       `▶ RUN: command "${commandName}" (${cmds.length} subcommands) (run at: "${runAt}")`
     );
 
     for (let i in cmds) {
       const cmd = cmds[i];
       try {
-         logOptOnly(optOnly,`▶ ${commandName} ▶ RUN: subcommand#${i + 1} > ${cmd}`);
-         logOptOnly(optOnly,"." + "-".repeat(5) + " OUTPUTS " + "-".repeat(6));
+        logOptOnly(
+          optOnly,
+          `▶ ${commandName} ▶ RUN: subcommand#${i + 1} > ${cmd}`
+        );
+        logOptOnly(optOnly, "." + "-".repeat(5) + " OUTPUTS " + "-".repeat(6));
         execSync(cmd, {
           cwd: runAt,
           stdio: "inherit",
         });
       } catch (e: any) {
         if (e instanceof Error) {
-           logOptOnly(false,"Execute command error: " + e.message);
+          logOptOnly(false, "Execute command error: " + e.message);
         }
       }
-       logOptOnly(optOnly,"`" + "-".repeat(20));
+      logOptOnly(optOnly, "`" + "-".repeat(20));
     }
-     logOptOnly(optOnly,`✔ FINISHED: running command "${commandName}"`);
+    logOptOnly(optOnly, `✔ FINISHED: running command "${commandName}"`);
   } else {
-     logOptOnly(optOnly,`⬇ SKIP: running command "${commandName}".`);
+    logOptOnly(optOnly, `⬇ SKIP: no command "${commandName}".`);
   }
 }
