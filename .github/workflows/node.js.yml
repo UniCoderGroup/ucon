@@ -33,4 +33,7 @@ jobs:
       # Run test in all packages
     - run: node ./dist/index.js run test "*"
       working-directory: ./scripts
+      # Upload coverage to Codecov.io
+    - name: Codecov
+      uses: codecov/codecov-action@v3.1.0
       
