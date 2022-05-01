@@ -37,7 +37,7 @@
     "@types/lodash": "4.14.182",
     "log-to-sth-api": "^0.0.0",
     "nodeliketty-testimpl": "^0.0.0",
-    "typescript": "4.6.3",
+    "typescript": "4.6.4",
     "utty-node": "^0.0.0",
     "ucon-components": "^0.0.0"
   },
