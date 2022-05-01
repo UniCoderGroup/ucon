@@ -31,6 +31,6 @@ jobs:
     - run: tsc --build
       working-directory: ./scripts
       # Run test in all packages
-    - run: node ./dist/index.js run test *
+    - run: node ./dist/index.js run test "*"
       working-directory: ./scripts
       
