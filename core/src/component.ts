@@ -3,7 +3,7 @@ import { Line, Midware, RefMidware } from "./line.js";
 import { combiner, inlStr } from "./std_components.js";
 import { ConForInput, ContentsArgs, get_default_ucon } from "./index.js";
 import _ from "lodash";
-import { FocusMoveArgs, FocusMoveResult } from "./focus.js";
+import { FocusItem } from "focus-system";
 
 /**
  * The base class of all the components.
@@ -262,9 +262,11 @@ export abstract class InputComponent<
     return this.con.getFocusInnerPos(this) as InnerPos | undefined;
   }
 
+  focuses: FocusItem[] = [];
+
   abstract run(): void;
   abstract onKeypress(): void;
-  abstract onFocusMove(args: FocusMoveArgs<InnerPos>): FocusMoveResult;
+  //abstract onFocusMove(args: FocusMoveArgs<InnerPos>): FocusMoveResult;
 }
 
 export type InputIP<T extends InputComponent> = T extends InputComponent<

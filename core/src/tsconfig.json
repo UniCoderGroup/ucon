@@ -7,6 +7,9 @@
   "references": [
     {
       "path": "../../utty/utty"
+    },
+    {
+      "path": "../../utils/focus-system"
     }
   ]
 }
