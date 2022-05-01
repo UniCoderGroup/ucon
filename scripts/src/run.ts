@@ -48,7 +48,13 @@ function action(
       `.`
     );
     workflow.forEach((command) =>
-      runCommand(command, pkg.commands ?? {}, pkg.path, projectPath, optOnly)
+      runCommand(
+        command,
+        _.defaultTo(pkg.commands, {}),
+        pkg.path,
+        projectPath,
+        optOnly
+      )
     );
   });
 }
@@ -69,7 +75,7 @@ function runCommand(
     } else if (_.isArray(command)) {
       cmds = command;
     } else if (_.isObject(command)) {
-      runAt = command.workDir ?? "<CurrentPackage>";
+      runAt = _.defaultTo(command.workDir ,"<CurrentPackage>");
       if (_.isString(command.commands)) {
         cmds = [command.commands];
       } else {

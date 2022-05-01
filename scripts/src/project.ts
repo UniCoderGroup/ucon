@@ -123,7 +123,7 @@ function addDefaultWorkflows(p: PackageInfo) {
 }
 
 function addName(p: PackageInfo, name: string) {
-  p.name = p.name ?? name;
+  p.name = _.defaultTo(p.name, name);
 }
 
 // const pkg = info.packages.find((v) => v.name === pkgName);
