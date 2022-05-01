@@ -79,6 +79,11 @@ export function parseInfo(
       packageInfos.push(packageInfo);
     }
   } else {
+    console.log(`
+    ---
+    packages: [${packages.join()}]
+    ---
+    `)
     packages.forEach((pkgName) => {
       let packageInfo = info.packages[pkgName];
       if (packageInfo) {
@@ -125,68 +130,3 @@ function addDefaultWorkflows(p: PackageInfo) {
 function addName(p: PackageInfo, name: string) {
   p.name = _.defaultTo(p.name, name);
 }
-
-// const pkg = info.packages.find((v) => v.name === pkgName);
-// if (pkg === undefined)
-//   throw new Error('Unknown package name :"' + pkgName + '"!');
-// console.log("Package info (classses filled in): ");
-// console.log(" - Path:\t" + pkg.path);
-// const dir = path.resolve("../", pkg.path);
-// console.log(" - Run at:\t" + dir);
-// console.log('Running package "' + pkgName + '" ...');
-
-// program.parse(process.argv);
-// resolveClasses(info);
-
-// let execIn = fs.createReadStream(""),
-//   execOut = new WriteStream(1),
-//   execErr = new WriteStream(2);
-// execOut.on("data", (data) => {
-//   console.log("????????", data.toString());
-// });
-// execErr.on("data", (data) => {
-//   console.error("????????", data.toString());
-// });
-
-// if (pkg.compile) {
-//   console.log(" - Compile cmd:\t" + pkg.compile);
-//   try {
-//     execSync(pkg.compile, {
-//       cwd: dir,
-//       stdio: "inherit",
-//     });
-//   } catch (e: any) {
-//     if (e instanceof Error) {
-//       console.log("Compile error: " + e.message);
-//     }
-//   }
-//   console.log("Compiled.");
-// }
-// if (pkg.run) {
-//   console.log(" - Run cmd:\t" + pkg.run);
-//   try {
-//     execSync(pkg.run, {
-//       cwd: dir,
-//       stdio: "inherit",
-//     });
-//   } catch (e: any) {
-//     if (e instanceof Error) {
-//       console.log("Run error: " + e.message);
-//     }
-//   }
-// }
-
-// interface PackageInfo {
-//   class?: string;
-//   compile?: string;
-//   run?: string;
-// }
-// interface Info {
-//   classes: ({
-//     name: string;
-//   } & PackageInfo)[];
-//   packages: ({
-//     name: string;
-//     path: string;
-//   } & PackageInfo)[];
-// }

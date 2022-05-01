@@ -3,7 +3,7 @@ import setupCmdRun from "./run.js";
 const program = new Command();
 
 program
-  .name("monocli")
+  .name("climo")
   .version("0.0.0")
   .option(
     "-p, --project <project-info-file-path>",
