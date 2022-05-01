@@ -22,7 +22,6 @@ function action(
   options: OptionValues,
   command: Command
 ) {
-  console.log(packages);
   const [projectPath, packageInfos] = P.parseInfo(packages, command);
   const optOnly: boolean = options.optOnly;
   packageInfos.forEach((pkg) => {
@@ -119,6 +118,7 @@ function runCommand(
         if (e instanceof Error) {
           logOptOnly(false, "Execute command error: " + e.message);
         }
+        throw e;
       }
       logOptOnly(optOnly, "`" + "-".repeat(20));
     }

@@ -79,11 +79,6 @@ export function parseInfo(
       packageInfos.push(packageInfo);
     }
   } else {
-    console.log(`
-    ---
-    packages: [${packages.join()}]
-    ---
-    `)
     packages.forEach((pkgName) => {
       let packageInfo = info.packages[pkgName];
       if (packageInfo) {
