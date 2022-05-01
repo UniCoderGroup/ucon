@@ -1,5 +1,5 @@
 {
-  "name": "mono-cli",
+  "name": "climo",
   "type": "module",
   "devDependencies": {
     "@types/lodash": "4.14.182",
