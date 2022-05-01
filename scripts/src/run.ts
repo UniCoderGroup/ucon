@@ -18,10 +18,11 @@ export default (cmd: Command) => {
 
 function action(
   type: string,
-  packages: string[],
+  packages: string[] | ["*"],
   options: OptionValues,
   command: Command
 ) {
+  console.log(packages);
   const [projectPath, packageInfos] = P.parseInfo(packages, command);
   const optOnly: boolean = options.optOnly;
   packageInfos.forEach((pkg) => {
@@ -75,7 +76,7 @@ function runCommand(
     } else if (_.isArray(command)) {
       cmds = command;
     } else if (_.isObject(command)) {
-      runAt = _.defaultTo(command.workDir ,"<CurrentPackage>");
+      runAt = _.defaultTo(command.workDir, "<CurrentPackage>");
       if (_.isString(command.commands)) {
         cmds = [command.commands];
       } else {
