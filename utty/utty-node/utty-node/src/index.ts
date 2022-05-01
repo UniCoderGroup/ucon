@@ -120,10 +120,6 @@ export default class UNodeTty implements UTty {
 
   protected _toLine(line: number): void {
     this._moveLine(-this.line + line);
-    if (this.line != line)
-      throw new Error(
-        `fn _toLine error: wanted to move to line${line}, but at line${this.line}`
-      );
   }
 
   protected _toNewLine(): void {
