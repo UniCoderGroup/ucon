@@ -33,10 +33,7 @@ export interface FocusMoveContext {
 }
 
 export abstract class Focus {
-  constructor(rect: Rect) {
-    this.rect = rect;
-  }
-  rect: Rect;
+  rect: Rect | undefined;
   abstract onEvent(type: string, ...args: any[]): void;
   abstract setFocused(ctx: FocusSetContext): void;
   abstract setUnfocused(): void;
@@ -45,8 +42,8 @@ export abstract class Focus {
 }
 
 export class FocusItem extends Focus {
-  constructor(rect: Rect, eventHandler?: FocusEventHandler) {
-    super(rect);
+  constructor(eventHandler?: FocusEventHandler) {
+    super();
     this.focused = false;
     this.eventHandler = eventHandler;
   }
@@ -65,8 +62,8 @@ export class FocusItem extends Focus {
     if (!this.focused) {
       this.focused = true;
       this.emitEvent("in");
-      ctx.setX((this.rect.left + this.rect.right) * 0.5);
-      ctx.setY((this.rect.top + this.rect.bottom) * 0.5);
+      ctx.setX((this.rect!.left + this.rect!.right) * 0.5);
+      ctx.setY((this.rect!.top + this.rect!.bottom) * 0.5);
     }
   }
   setUnfocused(): void {
@@ -79,9 +76,9 @@ export class FocusItem extends Focus {
     this.focused = true;
     this.emitEvent("in");
     if (ctx.direction === "L" || ctx.direction === "R") {
-      ctx.setX((this.rect.left + this.rect.right) * 0.5);
+      ctx.setX((this.rect!.left + this.rect!.right) * 0.5);
     } else if (ctx.direction === "U" || ctx.direction === "D") {
-      ctx.setY((this.rect.top + this.rect.bottom) * 0.5);
+      ctx.setY((this.rect!.top + this.rect!.bottom) * 0.5);
     }
   }
   move(ctx: FocusMoveContext): void {
@@ -93,12 +90,8 @@ export class FocusItem extends Focus {
 }
 
 export abstract class FocusGroup extends Focus {
-  constructor(
-    rect: Rect,
-    children: Focus[] = [],
-    eventHandler?: FocusEventHandler
-  ) {
-    super(rect);
+  constructor(children: Focus[] = [], eventHandler?: FocusEventHandler) {
+    super();
     this.children = children;
     this.eventHandler = eventHandler;
   }
@@ -142,7 +135,7 @@ export class FocusGroupV extends FocusGroup {
       case "R":
         for (let i = 0; i < this.children.length - 1; i++) {
           let mid =
-            (this.children[i].rect.bottom + this.children[i + 1].rect.top) / 2;
+            (this.children[i].rect!.bottom + this.children[i + 1].rect!.top) / 2;
           if (ctx.getY() < mid) {
             f = i;
             break;
@@ -175,7 +168,7 @@ export class FocusGroupV extends FocusGroup {
             return true;
           }
         },
-        to: ctx.to
+        to: ctx.to,
       };
     }
     this.emitEvent("move", ctx.direction);
@@ -190,7 +183,7 @@ export class FocusGroupH extends FocusGroup {
       case "D":
         for (let i = 0; i < this.children.length - 1; i++) {
           let mid =
-            (this.children[i].rect.right + this.children[i + 1].rect.left) / 2;
+            (this.children[i].rect!.right + this.children[i + 1].rect!.left) / 2;
           if (ctx.getX() < mid) {
             f = i;
             break;
@@ -223,7 +216,7 @@ export class FocusGroupH extends FocusGroup {
             return true;
           }
         },
-        to: ctx.to
+        to: ctx.to,
       };
     }
     this.emitEvent("move", ctx.direction);
@@ -264,7 +257,7 @@ export class FocusMap {
       },
       setY: (y: number) => {
         this.y = y;
-      }
+      },
     });
   }
   move(d: Direction): void {
@@ -284,7 +277,7 @@ export class FocusMap {
               setY: (y: number) => {
                 this.y = y;
               },
-              getX: () => this.x
+              getX: () => this.x,
             });
             return true;
           }
@@ -293,7 +286,7 @@ export class FocusMap {
           return false;
         }
       },
-      to: (focus: Focus) => this.to(d, focus)
+      to: (focus: Focus) => this.to(d, focus),
     });
   }
   to(d: Direction, focus: Focus): void {
@@ -303,7 +296,7 @@ export class FocusMap {
         setY: (y: number) => {
           this.y = y;
         },
-        getX: () => this.x
+        getX: () => this.x,
       });
     } else {
       focus.in({
@@ -311,7 +304,7 @@ export class FocusMap {
         setX: (x: number) => {
           this.x = x;
         },
-        getY: () => this.y
+        getY: () => this.y,
       });
     }
   }

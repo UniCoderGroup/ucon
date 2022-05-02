@@ -14,7 +14,37 @@ import { get_default_ucon } from "./index.js";
 import _ from "lodash";
 
 ///// Composition //////////////////////////////////////////
-
+export interface CompositionProps<Components extends BlockComponent[]> {
+  components: Components;
+}
+export abstract class Composition<
+  Components extends BlockComponent[] = BlockComponent[]
+> extends BlockComponent<CompositionProps<Components>> {}
+export class CompositionH<
+  Components extends BlockComponent[]
+> extends Composition<Components> {
+  render() {
+    let result: string[] = [];
+    for (let c of this.props.components) {
+      let lines = c.render();
+      for (let i = 0; i < lines.length; i++) {
+        if (i === result.length) {
+          result.push(lines[i]);
+        } else {
+          result[i] += lines[i];
+        }
+      }
+    }
+    return result;
+  }
+}
+export class CompositionV<
+  Components extends BlockComponent[]
+> extends Composition<Components> {
+  render() {
+    return this.props.components.flatMap((v) => v.render());
+  }
+}
 ////////////////////////////////////////////////////////////
 
 ///// Switcher /////////////////////////////////////////////

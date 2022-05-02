@@ -10,9 +10,8 @@ import UTty from "utty";
 import { Line, createLine, Midware, RefMidware } from "./line.js";
 import { combiner } from "./std_components.js";
 import { ContentsArgs } from "./global.js";
-import { FocusTarget } from "./focus.js";
-import { InputIP } from ".";
 import { __dev_logger } from "./_development.js";
+import { FocusMap } from "focus-system";
 
 export type ContainerStack = ContainerComponent[];
 
@@ -39,8 +38,7 @@ export interface ConForContainer extends ConWithUTty {
 export type ConForInline = ConWithUTty;
 
 export interface ConForInput extends ConWithUTty {
-  focus: FocusTarget | null;
-  getFocusInnerPos(focus: FocusTarget): InputIP<FocusTarget> | undefined;
+  get focusMap(): FocusMap;
 }
 
 /**
@@ -59,6 +57,11 @@ export default class UCon
   tty: UTty;
 
   /**
+   * Map of focus.
+   */
+  focusMap: FocusMap = new FocusMap();
+
+  /**
    * Lines. Each Line may have more than one real line.
    */
   lines: Line[] = [];
@@ -68,22 +71,8 @@ export default class UCon
    */
   stack: ContainerStack = [];
 
-  /**
-   * Focus of inputing.
-   */
-  focus: FocusTarget | null = null;
-  protected focusInnerPos: InputIP<FocusTarget> | undefined;
-
   get lineNum(): number {
     return this.lines.length;
-  }
-
-  getFocusInnerPos(focus: FocusTarget): InputIP<FocusTarget> | undefined {
-    if (this.focus === focus) {
-      return this.focusInnerPos;
-    } else {
-      return undefined;
-    }
   }
 
   /**

@@ -1,9 +1,23 @@
 import { ConForBlock, ConForContainer, ConForInline } from "./ucon.js";
 import { Line, Midware, RefMidware } from "./line.js";
-import { combiner, inlStr } from "./std_components.js";
-import { ConForInput, ContentsArgs, get_default_ucon } from "./index.js";
+import { combiner, inlStr, Composition } from "./std_components.js";
+import {
+  CompositionH,
+  CompositionV,
+  ConForInput,
+  ContentsArgs,
+  get_default_ucon,
+  Text,
+} from "./index.js";
 import _ from "lodash";
-import { FocusItem } from "focus-system";
+import {
+  Focus,
+  FocusEventHandler,
+  FocusGroup,
+  FocusGroupH,
+  FocusGroupV,
+  FocusItem,
+} from "focus-system";
 
 /**
  * The base class of all the components.
@@ -245,36 +259,88 @@ export abstract class InlineComponent<P = unknown> extends Component<
   abstract render(): string;
 }
 
+export type FocusPart =
+  | {
+      /**
+       * `"H"` stands for horizontal.
+       * `"V"` stands for vertical.
+       */
+      type: "H" | "V";
+      children: FocusPart[];
+    }
+  | {
+      /**
+       * `"I"` stands for an item.
+       */
+      type: "I";
+      content: BlockComponent;
+      eventHandler?: FocusEventHandler;
+    };
+
 /**
  * Input Component:
  * Component that decorates one line
  * @example Such as `Combiner`,`Italitic`
  */
-export abstract class InputComponent<
-  P = unknown,
-  InnerPos = unknown
-> extends Component<P, ConForInput> {
+export abstract class InputComponent<P = unknown> extends Component<
+  P,
+  ConForInput
+> {
   constructor(props: P, con: ConForInput = get_default_ucon()) {
     super(props, con);
   }
 
-  get innerPos(): InnerPos | undefined {
-    return this.con.getFocusInnerPos(this) as InnerPos | undefined;
+  focuses: Focus[] = [];
+
+  displayer: BlockComponent | undefined;
+
+  abstract render(): FocusPart;
+
+  mount() {
+    let result = this.render();
+    function gen(part: FocusPart): [BlockComponent, Focus] {
+      if (part.type === "I") {
+        return [part.content, new FocusItem(part.eventHandler)];
+      } else {
+        let compositionCtor, focusCtor;
+        switch (part.type) {
+          case "H":
+            compositionCtor = CompositionH;
+            focusCtor = FocusGroupH;
+            break;
+          case "V":
+            compositionCtor = CompositionV;
+            focusCtor = FocusGroupV;
+            break;
+        }
+        let children = part.children.map((v) => gen(v));
+        return [
+          new compositionCtor({
+            components: children.map((v) => v[0]),
+          }),
+          new focusCtor(children.map((v) => v[1])),
+        ];
+      }
+    }
+    let [displayer, focus] = gen(result);
+    this.displayer = displayer;
+    this.displayer.mount();
+    this.con.focusMap.children.push(focus);
   }
 
-  focuses: FocusItem[] = [];
+  unmount() {
+    if (_.isUndefined(this.displayer))
+      throw new Error("Cannot unmount unmounted component!");
+    else this.displayer.unmount();
+  }
 
-  abstract run(): void;
-  abstract onKeypress(): void;
+  redraw() {
+    this.unmount();
+    this.mount();
+  }
+  //abstract onKeypress(): void;
   //abstract onFocusMove(args: FocusMoveArgs<InnerPos>): FocusMoveResult;
 }
-
-export type InputIP<T extends InputComponent> = T extends InputComponent<
-  any,
-  infer IP
->
-  ? IP
-  : never;
 
 export function CreateComponentAndInit<C extends Component>(
   ctor: ComponentConstructor<C>,
