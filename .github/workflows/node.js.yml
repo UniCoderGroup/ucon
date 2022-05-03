@@ -2,13 +2,12 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, next]
   pull_request:
-    branches: [ main ]
+    branches: [main, next]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -16,25 +15,25 @@ jobs:
         node-version: [16.x]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
 
-      # Install monorepo dependencies
-    - run: npm ci
-      # Install all dependencies and link packages
-    - run: lerna bootstrap
-      # Build climo
-    - run: tsc --build
-      working-directory: ./scripts
-      # Run test in all packages
-    - run: node ./dist/index.js run test "*"
-      working-directory: ./scripts
-      # Upload coverage to Codecov.io
-    - name: Codecov
-      uses: codecov/codecov-action@v3.1.0
-      with:
-        directory: ./coverage
+        # Install monorepo dependencies
+      - run: npm ci
+        # Install all dependencies and link packages
+      - run: lerna bootstrap
+        # Build climo
+      - run: tsc --build
+        working-directory: ./scripts
+        # Run test in all packages
+      - run: node ./dist/index.js run test "*"
+        working-directory: ./scripts
+        # Upload coverage to Codecov.io
+      - name: Codecov
+        uses: codecov/codecov-action@v3.1.0
+        with:
+          directory: ./coverage

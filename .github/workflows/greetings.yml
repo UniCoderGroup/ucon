@@ -9,8 +9,8 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-    - uses: actions/first-interaction@v1
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        issue-message: 'Thank you for supporting the UCON framework!'
-        pr-message: 'Thank you for supporting the UCON framework!'
+      - uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: "Thank you for supporting the UCON framework!"
+          pr-message: "Thank you for supporting the UCON framework!"
