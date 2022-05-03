@@ -8,9 +8,14 @@ import {
   ComponentC,
 } from "./component.js";
 import { createLine, Line, Midware } from "./line.js";
-import UTty, { LineContext } from "utty";
-import { ContentsArgs, ContentsProps } from "./global.js";
+import {
+  ContentsArgs,
+  ContentsProps,
+  RenderedLine,
+  combineRenderedLines,
+} from "./global.js";
 import { get_default_ucon } from "./index.js";
+import UTty, { LineContext } from "utty";
 import _ from "lodash";
 
 ///// Composition //////////////////////////////////////////
@@ -24,23 +29,118 @@ export class CompositionH<
   Components extends BlockComponent[]
 > extends Composition<Components> {
   render() {
-    let result: string[] = [];
-    for (let c of this.props.components) {
+    let result: RenderedLine[] = [];
+    for (const c of this.props.components) {
       let lines = c.render();
       for (let i = 0; i < lines.length; i++) {
         if (i === result.length) {
           result.push(lines[i]);
         } else {
-          result[i] += lines[i];
+          result[i] = combineRenderedLines(result[i], lines[i]);
         }
       }
     }
     return result;
   }
 }
+class CompositionVFakeLine implements Line {
+  constructor(realLine: Line) {
+    this.realLine = realLine;
+  }
+  realLine: Line;
+  y = -1;
+  get content(): InlineComponent {
+    return this.realLine.content;
+  }
+  set content(content: InlineComponent) {
+    this.realLine.content = content;
+  }
+  get midwares(): Midware[] {
+    return this.realLine.midwares;
+  }
+  render(additionalContext?: LineContext): [string, LineContext] {
+    return this.realLine.render(additionalContext);
+  }
+}
+interface CompositionVLine {
+  real: Line;
+  fake: SwitcherFakeLine;
+}
+function createCompositionVLine(
+  stack: ContainerStack,
+  content: InlineComponent
+): CompositionVLine {
+  let real = createLine(stack, content);
+  return {
+    real: real,
+    fake: new CompositionVFakeLine(real),
+  };
+}
+class CompositionVFakeCon implements ConForBlock {
+  constructor(con: ConForBlock) {
+    this.con = con;
+    this.stack = _.clone(con.stack);
+    this.startY = con.lineNum;
+    this.tty = this.con.tty;
+  }
+  con: ConForBlock;
+  stack: ContainerStack;
+  startY: number;
+  lines: CompositionVLine[] = [];
+  tty: UTty;
+  get lineNum() {
+    return this.lines.length;
+  }
+  redraw(line: Line): void {
+    this.con.redraw(this.lines[line.y].fake);
+  }
+  insertLine(y: number, line: Line): void {
+    this.lines.push(this.lines[this.lines.length - 1]);
+    for (let i = this.lines.length - 1; i > y; i--) {
+      this.lines[i] = this.lines[i - 1];
+      this.lines[i].real.y++;
+    }
+    this.lines[y] = createCompositionVLine(this.stack, line.content);
+    this.lines[y].real.y = y;
+    this.con.insertLine(this.startY + y, this.lines[y].fake);
+  }
+  deleteLine(line: Line): void {
+    if (this.lines[line.y].real !== line) {
+      throw new Error("This line has already been detached!");
+    }
+    for (let i = line.y + 1; i < this.lines.length; i++) {
+      this.lines[i - 1] = this.lines[i];
+      this.lines[i - 1].real.y--;
+    }
+    this.con.deleteLine(this.lines[line.y].fake);
+    this.lines.pop();
+  }
+  addLine(content: InlineComponent): Line {
+    const currentLine = createSwitcherLine(this.stack, content);
+    currentLine.real.y = this.lineNum;
+    this.con.insertLine(this.startY + this.lineNum, currentLine.fake);
+    this.lines.push(currentLine);
+    return currentLine.real;
+  }
+}
 export class CompositionV<
   Components extends BlockComponent[]
 > extends Composition<Components> {
+  constructor(
+    props: CompositionProps<Components>,
+    con: ConForBlock = get_default_ucon()
+  ) {
+    super(props, con);
+    this.fakeCon = new CompositionVFakeCon(this.con);
+  }
+  fakeCon: CompositionVFakeCon;
+  mount() {
+    super.mount();
+    for (const c of this.props.components) {
+      c.con = this.fakeCon;
+      c.mount();
+    }
+  }
   render() {
     return this.props.components.flatMap((v) => v.render());
   }
@@ -231,7 +331,7 @@ export type TextProps = ContentsArgs;
 export class Text extends BlockComponent<TextProps> {
   render() {
     let result = [""];
-    for (let c of combiner(...this.props).render()) {
+    for (const c of combiner(...this.props).render()) {
       if (c === "\n") {
         result.push("");
       } else {

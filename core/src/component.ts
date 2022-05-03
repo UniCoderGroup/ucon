@@ -10,6 +10,7 @@ import {
   Text,
 } from "./index.js";
 import _ from "lodash";
+import { RenderedLine, renderedLine2InlineComponent } from "./global";
 import {
   Focus,
   FocusEventHandler,
@@ -44,7 +45,7 @@ export abstract class Component<
   /**
    * UCon console.
    */
-  readonly con: C;
+  /*readonly*/ con: C;
 
   /**
    * Init the component.
@@ -119,15 +120,15 @@ export abstract class BlockComponent<P = unknown> extends Component<
       this.neverMounted = false;
     }
     this.mounted = true;
-    const strs = this.render();
-    for (const str of strs) {
-      this.lines.push(this.con.addLine(inlStr(str)));
+    const rendered = this.render();
+    for (const str of rendered) {
+      this.lines.push(this.con.addLine(renderedLine2InlineComponent(str)));
     }
   }
 
   unmount(): void {
     if (!this.mounted) throw new Error("Cannot unmount unmounted component!");
-    for (let line of this.lines) {
+    for (const line of this.lines) {
       this.con.deleteLine(line);
     }
     this.mounted = false;
@@ -138,7 +139,9 @@ export abstract class BlockComponent<P = unknown> extends Component<
    * @param offsetLine which line to redraw.
    */
   redraw(offsetLine = 0): void {
-    this.lines[offsetLine].content = combiner(this.render()[offsetLine]);
+    this.lines[offsetLine].content = renderedLine2InlineComponent(
+      this.render()[offsetLine]
+    );
     //If no proxy
     this.con.redraw(this.lines[offsetLine]);
   }
@@ -147,9 +150,9 @@ export abstract class BlockComponent<P = unknown> extends Component<
    * Redraw all lines.
    */
   redrawAll(): void {
-    let strs = this.render();
-    for (let i = 0; i < strs.length; i++) {
-      this.lines[i].content = combiner(strs[i]);
+    let rendered = this.render();
+    for (let i = 0; i < rendered.length; i++) {
+      this.lines[i].content = renderedLine2InlineComponent(rendered[i]);
       //If no proxy
       this.con.redraw(this.lines[i]);
     }
@@ -159,7 +162,7 @@ export abstract class BlockComponent<P = unknown> extends Component<
    * Render returns lines of text.
    * Wait for you to impl it.
    */
-  abstract render(): string[];
+  abstract render(): RenderedLine[];
 }
 
 /**

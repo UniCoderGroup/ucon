@@ -70,7 +70,7 @@ export function parseInfo(
   let info = readInfo(project);
   let packageInfos: PackageInfo[] = [];
   if (packages[0] === "*") {
-    for (let pkgName in info.packages) {
+    for (const pkgName in info.packages) {
       let packageInfo = info.packages[pkgName];
       packageInfo = resolveClasses(packageInfo, info.classes);
       resolvePath(packageInfo, baseDir);

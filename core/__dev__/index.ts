@@ -3,6 +3,9 @@ import UCon, {
   Switcher,
   Text,
   set_default_ucon,
+  ContentsArgs,
+  FocusPart,
+  InputComponent,
 } from "../dist/index.js";
 import {
   chalkjs,
@@ -16,33 +19,60 @@ import { __dev_logger } from "../dist/_development.js";
 import { stdout } from "node:process";
 import UNodeTty from "utty-node";
 import NodeLikeTtyTestImpl from "nodeliketty-testimpl";
+import { FocusGroup, FocusGroupH, FocusItem } from "focus-system";
 
 __dev_logger.attach("http://0.0.0.0:3000/");
 
-setTimeout(() => {
+// setTimeout(() => {
+{
   process.env.__dev_logger = __dev_logger as unknown as string;
 
   const ti = new NodeLikeTtyTestImpl();
   const ucon = new UCon(new UNodeTty(stdout));
   set_default_ucon(ucon);
 
-  let x = new Switcher({
-    ctor1: ProgressBar,
-    prop1: {
-      name: "Uploading",
-      width: 30,
-      fractionDigits: 1,
-    },
-    ctor2: Text,
-    prop2: ["12"],
-  });
-  x.mount(1);
-  ucon.log("2222222222222");
-  x.switch(2);
-  ucon.log("3333333333333");
-  x.unmount();
+  const r0 = {
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+  };
+  class ABC extends InputComponent<{
+    choices: ContentsArgs[];
+  }> {
+    render(): FocusPart {
+      return {
+        type: "H",
+        children: this.props.choices.map((v) => {
+          return {
+            type: "I",
+            content: new Text(v),
+          };
+        }),
+      };
+    }
+  }
 
-  setTimeout(() => __dev_logger.detach(), 100);
+  let abc = new ABC({ choices: [["A"], ["B"], ["C"]] });
+  abc.mount();
+
+  // let x = new Switcher({
+  //   ctor1: ProgressBar,
+  //   prop1: {
+  //     name: "Uploading",
+  //     width: 30,
+  //     fractionDigits: 1,
+  //   },
+  //   ctor2: Text,
+  //   prop2: ["12"],
+  // });
+  // x.mount(1);
+  // ucon.log("2222222222222");
+  // x.switch(2);
+  // ucon.log("3333333333333");
+  // x.unmount();
+
+  // setTimeout(() => __dev_logger.detach(), 100);
 
   // let timeBegin = process.uptime();
   // let group = new GroupBox({});
@@ -94,7 +124,7 @@ setTimeout(() => {
   //     setTimeout(()=>__dev_logger.detach(),100);
   //   }
   // };
-  // for (let i = 0; i < n; i++) {
+  // for (const i = 0; i < n; i++) {
   //   fn(i);
   // }
   // let waitText = ucon.log(chalkjs(chalk.green, "...waiting..."));
@@ -182,5 +212,6 @@ setTimeout(() => {
 
   // x(1);
 
-  //__dev_logger.detach()
-}, 100);
+  __dev_logger.detach()
+  // }, 100);
+}

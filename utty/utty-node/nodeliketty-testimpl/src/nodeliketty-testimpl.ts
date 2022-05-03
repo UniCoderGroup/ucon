@@ -60,7 +60,7 @@ export default class TestImpl implements NodeLikeTty {
   write(buffer: Uint8Array | string, cb?: (err?: Error) => void): boolean {
     this.opStartFunc("write", buffer, cb);
     let crtLine = "";
-    for (let c of buffer) {
+    for (const c of buffer) {
       if (c === "\n") {
         this.opPush(`MEET \\n`);
         this.x += crtLine.length;

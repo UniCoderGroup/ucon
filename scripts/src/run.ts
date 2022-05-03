@@ -88,7 +88,7 @@ function runCommand(
       "<CurrentPackage>": packagePath,
     };
     const replacer = (v: string) => {
-      for (let k in replaceTable) {
+      for (const k in replaceTable) {
         v = v.replace(new RegExp(_.escapeRegExp(k), "g"), replaceTable[k]);
       }
       return v;
@@ -102,7 +102,7 @@ function runCommand(
       `▶ RUN: command "${commandName}" (${cmds.length} subcommands) (run at: "${runAt}")`
     );
 
-    for (let i in cmds) {
+    for (const i in cmds) {
       const cmd = cmds[i];
       try {
         logOptOnly(

@@ -39,6 +39,9 @@
       "commands": {
         "runner:start": "npx react-scripts start",
         "compiler:build": "npx react-scripts build"
+      },
+      "workflows": {
+        "build": ["compiler:build"]
       }
     }
   },
@@ -60,7 +63,7 @@
     },
     "focus-system": {
       "path": "./utils/focus-system",
-      "class": "react"
+      "class": "ts"
     },
     "log-to-sth-api": {
       "path": "./utils/log-to-sth/log-to-sth-api",

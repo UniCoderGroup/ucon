@@ -76,7 +76,7 @@ export default class UNodeTty implements UTty {
    */
   protected _getLineNum(str: string): number {
     let lines = 1;
-    for (let c of str) {
+    for (const c of str) {
       if (c === "\n") {
         lines++;
       }
@@ -143,7 +143,7 @@ export default class UNodeTty implements UTty {
           }>
         | undefined;
       if (colors !== undefined) {
-        for (let color of colors) {
+        for (const color of colors) {
           const c = color2chalk.get(color.name as Color);
           if (c === undefined) {
             throw new Error("Unknown color name!");
