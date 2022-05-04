@@ -1,5 +1,4 @@
 export * from "./global.js";
-export * from "./line.js";
 export * from "./ucon.js";
 export * from "utty";
 export * from "./component.js";
