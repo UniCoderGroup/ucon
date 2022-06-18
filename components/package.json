@@ -39,7 +39,7 @@
     "ucon": "^0.0.0"
   },
   "devDependencies": {
-    "@types/chalk": "^2.2.0",
-    "@types/lodash": "^4.14.182"
+    "@types/chalk": "2.2.0",
+    "@types/lodash": "4.14.182"
   }
 }
